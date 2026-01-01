@@ -80,24 +80,30 @@ STRICT TECHNICAL RULES:
   async analyzeBook(metadata: any, coverInfo?: { data: string, mimeType: string }, uiLang: UILanguage = 'en'): Promise<BookStrategy> {
     const ai = new GoogleGenAI({ apiKey: this.getApiKey() });
     
-    const prompt = `Perform a deep literary and structural analysis of this book for translation from ${this.sourceLanguage} to ${this.targetLanguage}:
+    const prompt = `Perform a deep literary and structural analysis of this book for translation from ${this.sourceLanguage} to ${this.targetLanguage}.
+    
+    METADATA:
     Title: ${metadata.title}
     Author: ${metadata.creator}
     Description: ${metadata.description}
     
-    GUIDELINES FOR creativity_level (0.0 to 1.0):
-    - 0.1 to 0.2: Technical, academic, non-fiction where precision is paramount.
-    - 0.3 to 0.4: Classical literature, historical accounts, formal prose.
-    - 0.5 to 0.6: Modern fiction, sci-fi, crime thrillers where flow and emotion are key.
-    - 0.7 to 0.8: Poetry, surrealist literature, children's books requiring heavy localization.
+    INSTRUCTIONS:
+    1. Research the author "${metadata.creator}" and this specific work if possible.
+    2. Determine the author's characteristic writing style, vocabulary complexity, and narrative tone.
+    3. Suggest a 'detected_creativity_level' (0.0 to 1.0) for the translation:
+       - 0.0 to 0.2: Highly technical, academic, or factual texts requiring literal precision.
+       - 0.3 to 0.4: Classic literature, formal journalism, non-fiction narratives.
+       - 0.5 to 0.6: Modern fiction, colloquial dialogue, fast-paced thrillers.
+       - 0.7 to 0.9: Poetry, experimental prose, or avant-garde works needing creative localization.
     
-    Identify genre, tone, and authorial style. Return a JSON blueprint. All translated fields must be in language: ${uiLang}.`;
+    Return a JSON blueprint. All translated fields must be in the interface language: ${uiLang}.`;
 
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: prompt,
         config: { 
+          tools: [{googleSearch: {}}],
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -111,7 +117,7 @@ STRICT TECHNICAL RULES:
               author_style_translated: { type: Type.STRING },
               strategy_translated: { type: Type.STRING },
               literary_fidelity_note: { type: Type.STRING },
-              detected_creativity_level: { type: Type.NUMBER, description: "Suggested temperature value for this book's genre/style." }
+              detected_creativity_level: { type: Type.NUMBER, description: "Suggested temperature value based on author research." }
             },
             required: ["genre_en", "tone_en", "author_style_en", "strategy_en", "genre_translated", "tone_translated", "author_style_translated", "strategy_translated", "literary_fidelity_note", "detected_creativity_level"]
           }
@@ -129,8 +135,11 @@ STRICT TECHNICAL RULES:
       console.error("Analysis fail", err);
       return { 
         genre_en: "Literature", tone_en: "Narrative", author_style_en: "Fluid", strategy_en: "Fidelity",
-        genre_translated: "Edebiyat", tone_translated: "Anlatı", author_style_translated: "Akıcı", strategy_translated: "Sadakat",
-        literary_fidelity_note: "Default strategy.", detected_creativity_level: 0.4
+        genre_translated: uiLang === 'tr' ? "Edebiyat" : "Literature", 
+        tone_translated: uiLang === 'tr' ? "Anlatı" : "Narrative", 
+        author_style_translated: uiLang === 'tr' ? "Akıcı" : "Fluid", 
+        strategy_translated: uiLang === 'tr' ? "Sadakat" : "Fidelity",
+        literary_fidelity_note: "Default fallback strategy used.", detected_creativity_level: 0.4
       };
     }
   }

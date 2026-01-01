@@ -55,7 +55,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     sourceLang: "KAYNAK DİL", targetLang: "HEDEF DİL", creativity: "YARATICILIK", htmlTags: "HTML ETİKETLERİ",
     systemMonitor: "Sistem İzleyici", startBtn: "Çeviriyi Başlat", resumeBtn: "Devam Et", stopBtn: "Durdur", downloadBtn: "EPUB İNDİR", pdfBtn: "PDF İNDİR",
     tokens: "TOKEN", speed: "HIZ", eta: "KALAN", processing: "İşleniyor", idle: "Hazır",
-    title: "Edebi EPUB Çevirmeni", description: "Profesyonel Edebi Çeviri Motoru", settingsTitle: "AYARLAR VE KONFİGÜRASYON",
+    title: "Edebi EPUB Çevirmeni", description: "Profesyonel Edebi Çeviri Engine", settingsTitle: "AYARLAR VE KONFİGÜRASYON",
     restoreSettings: "Geri Yükle", selectLang: "DİL SEÇİN", error: "HATA", apiStatus: "API DURUMU",
     freeMode: "ÜCRETSİZ MOD", paidMode: "PRO MOD", connectAiStudio: "AI STUDIO BAĞLAN", billingInfo: "Gelişmiş modeller için Paid Key gereklidir.",
     lockedModel: "Bağlantı Gerekli", checkKey: "Doğrulanıyor...", verifyBtn: "AKTİF ET", manualKeyLabel: "MANUEL ANAHTAR",
@@ -87,7 +87,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     manualKeyPlaceholder: "Paste your API key...", aiAnalysis: "AI ANALYSIS", preparing: "AWAITING PREP",
     systemLogsReady: "Waiting for logs...", verifyingError: "Key error!", literal: "Literal", creative: "Creative",
     quotaError: "QUOTA EXCEEDED: Please wait about 60 seconds. Translation paused, you can resume later.",
-    interfaceSettings: "INTERFACE SETTINGS", themeMode: "THEMODE", appLanguage: "APP LANGUAGE",
+    interfaceSettings: "INTERFACE SETTINGS", themeMode: "THEME MODE", appLanguage: "APP LANGUAGE",
     copyright: "2024 AI Literary EPUB Translator. All rights reserved.", madeWith: "MADE WITH LOVE WITH GEMINI AI.", learnMore: "INFO",
     aiOptimized: "AI OPTIMIZED",
     legalWarningTitle: "LEGAL DISCLAIMER & TERMS OF SERVICE",
@@ -101,7 +101,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
   }
 };
 
-// Fill other 14 languages with English as fallback
+// Fill other 14 languages with English as fallback and localized tags
 LANGUAGES_DATA.forEach(lang => {
   if (!STRINGS_REGISTRY[lang.code]) {
     STRINGS_REGISTRY[lang.code] = { ...STRINGS_REGISTRY['en'] };
@@ -223,7 +223,7 @@ export default function App() {
         { ...settings, uiLang }, 
         (p) => {
           setProgress(prev => {
-            // Auto-optimize temperature if AI analysis is finished
+            // AI optimized update
             if (p.strategy && !prev.strategy) {
                const recommendedTemp = p.strategy.detected_creativity_level;
                setSettings(s => ({ ...s, temperature: recommendedTemp }));
@@ -553,7 +553,7 @@ export default function App() {
             <div className="flex justify-between items-center mb-6 md:mb-10"><h3 className="text-xl md:text-3xl font-black">{t.selectLang}</h3><button onClick={() => setIsLangModalOpen(false)} className="p-2 md:p-4 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all hover:rotate-90"><X /></button></div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-5 overflow-y-auto max-h-[60vh] p-1 md:p-2 custom-scrollbar">
               {LANGUAGES_DATA.map(l => (
-                <button key={l.code} onClick={() => { setUiLang(l.code as UILanguage); setIsLangModalOpen(false); localStorage.setItem('lit-trans-ui-lang', l.code) }} className={`p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-2 flex flex-col items-center gap-2 md:gap-4 transition-all duration-500 ${uiLang === l.code ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-2xl scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}><span className="text-3xl md:text-5xl">{l.flag}</span><span className="text-[9px] md:text-[11px] font-black uppercase trackingest text-center">{l.label}</span></button>
+                <button key={l.code} onClick={() => { setUiLang(l.code as UILanguage); setIsLangModalOpen(false); localStorage.setItem('lit-trans-ui-lang', l.code) }} className={`p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-2 flex flex-col items-center gap-2 md:gap-4 transition-all duration-500 ${uiLang === l.code ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-2xl scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}><span className="text-3xl md:text-5xl">{l.flag}</span><span className="text-[9px] md:text-[11px] font-black uppercase tracking-widest text-center">{l.label}</span></button>
               ))}
             </div>
           </div>
