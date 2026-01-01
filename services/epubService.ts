@@ -49,34 +49,40 @@ export interface TranslationProgress {
 
 const STRINGS_LOGS: Record<string, any> = {
   tr: {
-    analyzing: "Yapay zeka kitabın üslubunu ve yazarın kalemini analiz ediyor...",
-    found: "Kitapta {0} adet metin dosyası bulundu.",
-    starting: "Çeviri işlemi başlatılıyor...",
-    resuming: "Kaldığı yerden devam ediliyor...",
-    stop: "İşlem kullanıcı tarafından durduruldu.",
-    quotaExceeded: "API Kotası aşıldı! Yaklaşık 60 saniye bekleniyor...",
-    finished: "Çeviri başarıyla tamamlandı!",
-    processingFile: "Dosya işleniyor: {0} ({1}/{2}) - {3} etiket bulundu.",
-    noNodes: "Bu dosyada çevrilecek uygun etiket bulunamadı, atlanıyor.",
-    error: "Hata oluştu: {0}"
+    analyzing: "Yapay zeka kitabın üslubunu analiz ediyor...",
+    found: "Kitapta toplam {0} içerik dosyası bulundu.",
+    starting: "Çeviri başlatılıyor...",
+    stop: "Durduruldu.",
+    quotaExceeded: "Kota sınırı! 60 saniye bekleniyor...",
+    finished: "Çeviri tamamlandı!",
+    processingFile: "İşleniyor: {0} ({1}/{2}) - {3} düğüm bulundu.",
+    noNodes: "Bu dosyada hedef etiket bulunamadı, atlanıyor.",
+    error: "Hata: {0}",
+    saving: "EPUB dosyası paketleniyor...",
+    nodeProgress: "Dosya içi ilerleme: %{0}"
   },
   en: {
-    analyzing: "AI is analyzing the book's style and author's voice...",
-    found: "Found {0} text files in the book.",
+    analyzing: "AI is analyzing the style...",
+    found: "Total {0} content files found.",
     starting: "Starting translation...",
-    resuming: "Resuming from last save...",
-    stop: "Process stopped by user.",
-    quotaExceeded: "Quota exceeded! Waiting ~60 seconds...",
-    finished: "Translation completed successfully!",
-    processingFile: "Processing: {0} ({1}/{2}) - Found {3} tags.",
-    noNodes: "No suitable tags found in this file, skipping.",
-    error: "Error: {0}"
+    stop: "Stopped.",
+    quotaExceeded: "Quota exceeded! Waiting 60s...",
+    finished: "Completed!",
+    processingFile: "Processing: {0} ({1}/{2}) - {3} nodes found.",
+    noNodes: "No nodes found, skipping.",
+    error: "Error: {0}",
+    saving: "Packaging EPUB...",
+    nodeProgress: "Internal file progress: {0}%"
   }
 };
 
 function getLogStr(uiLang: string, key: string): string {
   const bundle = STRINGS_LOGS[uiLang] || STRINGS_LOGS['en'];
   return bundle[key] || STRINGS_LOGS['en'][key];
+}
+
+function preprocessHtml(html: string): string {
+  return html.replace(/&(?!(amp|lt|gt|quot|apos);)[a-z0-9]+;/gi, ' ');
 }
 
 export async function processEpub(
@@ -90,36 +96,64 @@ export async function processEpub(
   const translator = new GeminiTranslator(settings.temperature, settings.sourceLanguage, settings.targetLanguage, settings.modelId);
   const epubZip = await new JSZip().loadAsync(await file.arrayBuffer());
 
-  // EPUB Yapısını Çözümle
+  // Değişkenleri en başta ilklendir (Initialization Error engellemek için)
+  let totalWords = 0;
+  let processedFilesCount = resumeFrom ? resumeFrom.zipPathIndex : 0;
+  let processList: string[] = [];
+  const translatedNodes: Record<string, string[]> = resumeFrom ? { ...resumeFrom.translatedNodes } : {};
+  let strategy: BookStrategy | undefined = undefined;
+  let cumulativeLogs: LogEntry[] = [
+    { timestamp: new Date().toLocaleTimeString(), text: getLogStr(ui, 'analyzing') }
+  ];
+
+  const triggerProgress = (updates: Partial<TranslationProgress>) => {
+    onProgress({
+      currentFile: processedFilesCount,
+      totalFiles: processList.length || 0,
+      currentPercent: processList.length > 0 ? Math.round((processedFilesCount / processList.length) * 100) : 0,
+      status: 'processing',
+      logs: [...cumulativeLogs],
+      strategy,
+      usage: translator.getUsage(),
+      totalProcessedWords: totalWords,
+      translatedNodes,
+      ...updates
+    });
+  };
+
+  const addLog = (text: string) => {
+    cumulativeLogs.push({ timestamp: new Date().toLocaleTimeString(), text });
+    if (cumulativeLogs.length > 50) cumulativeLogs.shift();
+    triggerProgress({});
+  };
+
+  // 1. Analiz Aşaması
+  triggerProgress({ status: 'analyzing' });
+
   const containerXml = await epubZip.file("META-INF/container.xml")?.async("string");
-  if (!containerXml) throw new Error("Geçersiz EPUB: container.xml eksik.");
+  if (!containerXml) throw new Error("Geçersiz EPUB: container.xml yok.");
 
   const parser = new DOMParser();
   const containerDoc = parser.parseFromString(containerXml, "application/xml");
   const opfPath = containerDoc.querySelector("rootfile")?.getAttribute("full-path");
-  if (!opfPath) throw new Error("Geçersiz EPUB: OPF yolu bulunamadı.");
+  if (!opfPath) throw new Error("Geçersiz EPUB: OPF yolu yok.");
 
   const opfContent = await epubZip.file(opfPath)?.async("string");
-  if (!opfContent) throw new Error("Geçersiz EPUB: OPF içeriği okunamadı.");
+  if (!opfContent) throw new Error("Geçersiz EPUB: OPF boş.");
   
   const opfDoc = parser.parseFromString(opfContent, "application/xml");
   const opfFolder = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/')) : '';
 
   const metadata = {
-    title: opfDoc.querySelector("dc\\:title, title")?.textContent || "Başlıksız",
-    creator: opfDoc.querySelector("dc\\:creator, creator")?.textContent || "Bilinmeyen Yazar",
+    title: opfDoc.querySelector("dc\\:title, title")?.textContent || "Kitap",
+    creator: opfDoc.querySelector("dc\\:creator, creator")?.textContent || "Yazar",
     description: opfDoc.querySelector("dc\\:description, description")?.textContent || ""
   };
 
-  onProgress({
-    currentFile: 0, totalFiles: 0, currentPercent: 0, status: 'analyzing',
-    logs: [{ timestamp: new Date().toLocaleTimeString(), text: getLogStr(ui, 'analyzing') }]
-  });
-
-  const strategy = await translator.analyzeBook(metadata, undefined, ui);
+  strategy = await translator.analyzeBook(metadata, undefined, ui);
   translator.setStrategy(strategy);
 
-  // Manifest ve Spine Eşleşmesi
+  // 2. Dosya Listesi Hazırlama
   const manifestItems = Array.from(opfDoc.querySelectorAll("manifest > item"));
   const idToHref: Record<string, string> = {};
   manifestItems.forEach(item => {
@@ -129,65 +163,42 @@ export async function processEpub(
   });
 
   const spineItems = Array.from(opfDoc.querySelectorAll("spine > itemref"));
-  const processList = spineItems.map(item => {
+  processList = spineItems.map(item => {
     const idref = item.getAttribute("idref");
     if (!idref || !idToHref[idref]) return null;
     const href = idToHref[idref];
-    // Dosya yolu çözünürlüğü (decodeURIComponent ile boşluk/karakter sorunlarını çöz)
     const rawPath = opfFolder ? `${opfFolder}/${href}` : href;
     const decodedPath = decodeURIComponent(rawPath);
-    
-    // Fermuar içinde tam yolu kontrol et
     if (epubZip.file(decodedPath)) return decodedPath;
     if (epubZip.file(rawPath)) return rawPath;
     return null;
   }).filter(Boolean) as string[];
 
-  let totalWords = 0;
-  let processedFiles = resumeFrom ? resumeFrom.zipPathIndex : 0;
-  const translatedNodes: Record<string, string[]> = resumeFrom ? { ...resumeFrom.translatedNodes } : {};
+  addLog(getLogStr(ui, 'found').replace('{0}', processList.length.toString()));
   const startTime = Date.now();
 
-  const sendUpdate = (msg?: string, percent?: number, wps?: number, zipIdx?: number, nodeIdx?: number) => {
-    onProgress({
-      currentFile: (zipIdx !== undefined ? zipIdx + 1 : processedFiles + 1),
-      totalFiles: processList.length,
-      currentPercent: percent ?? Math.round((processedFiles / processList.length) * 100),
-      status: 'processing',
-      logs: msg ? [{ timestamp: new Date().toLocaleTimeString(), text: msg }] : [],
-      strategy,
-      usage: translator.getUsage(),
-      wordsPerSecond: wps,
-      totalProcessedWords: totalWords,
-      lastZipPathIndex: zipIdx,
-      lastNodeIndex: nodeIdx,
-      translatedNodes
-    });
-  };
-
-  sendUpdate(getLogStr(ui, 'found').replace('{0}', processList.length.toString()));
-
-  for (let zipIdx = processedFiles; zipIdx < processList.length; zipIdx++) {
+  // 3. Çeviri Döngüsü
+  for (let zipIdx = processedFilesCount; zipIdx < processList.length; zipIdx++) {
     const path = processList[zipIdx];
     if (signal.aborted) throw new Error(getLogStr(ui, 'stop'));
 
-    const content = await epubZip.file(path)?.async("string");
-    if (!content) continue;
-
-    // XHTML/XML olarak ayrıştır
-    const doc = parser.parseFromString(content, "application/xhtml+xml");
-    const isXhtml = doc.documentElement.namespaceURI === "http://www.w3.org/1999/xhtml";
-    
-    // Seçicileri oluştur
-    const selectors = settings.targetTags.join(',');
-    const nodes = Array.from(doc.querySelectorAll(selectors));
-
-    if (nodes.length === 0) {
-      processedFiles++;
+    const originalContent = await epubZip.file(path)?.async("string");
+    if (!originalContent) {
+      processedFilesCount++;
       continue;
     }
 
-    sendUpdate(
+    const cleanContent = preprocessHtml(originalContent);
+    const doc = parser.parseFromString(cleanContent, "text/html");
+    const nodes = Array.from(doc.querySelectorAll(settings.targetTags.join(',')));
+
+    if (nodes.length === 0) {
+      addLog(`${path.split('/').pop()}: ${getLogStr(ui, 'noNodes')}`);
+      processedFilesCount++;
+      continue;
+    }
+
+    addLog(
       getLogStr(ui, 'processingFile')
         .replace('{0}', path.split('/').pop() || path)
         .replace('{1}', (zipIdx + 1).toString())
@@ -202,50 +213,53 @@ export async function processEpub(
       if (signal.aborted) throw new Error(getLogStr(ui, 'stop'));
       const node = nodes[nodeIdx];
       
-      // Halihazırda çevrilmişse atla (resume durumu için)
+      const originalInner = node.innerHTML.trim();
+      if (!originalInner || originalInner.length < 2) continue;
+
       if (translatedNodes[path][nodeIdx]) {
         node.innerHTML = translatedNodes[path][nodeIdx];
         continue;
       }
-
-      const originalHtml = node.innerHTML.trim();
-      if (!originalHtml || originalHtml.length < 1) continue;
       
       try {
-        const translatedHtml = await translator.translateSingle(originalHtml);
-        if (translatedHtml && translatedHtml !== originalHtml) {
-          node.innerHTML = translatedHtml;
-          translatedNodes[path][nodeIdx] = translatedHtml;
-          
-          const wordCount = (node.textContent || "").split(/\s+/).filter(Boolean).length;
-          totalWords += wordCount;
+        const translated = await translator.translateSingle(originalInner);
+        if (translated) {
+          node.innerHTML = translated;
+          translatedNodes[path][nodeIdx] = translated;
+          totalWords += (node.textContent || "").split(/\s+/).filter(Boolean).length;
 
-          // Periyodik UI güncellemesi
-          if (nodeIdx % 5 === 0 || nodeIdx === nodes.length - 1) {
-            const elapsed = (Date.now() - startTime) / 1000;
-            const wps = totalWords / Math.max(1, elapsed);
-            const currentFileProgress = (nodeIdx + 1) / nodes.length;
-            const overallPercent = Math.round(((zipIdx + currentFileProgress) / processList.length) * 100);
-            sendUpdate(undefined, overallPercent, wps, zipIdx, nodeIdx);
-          }
+          const elapsed = (Date.now() - startTime) / 1000;
+          const wps = totalWords / Math.max(1, elapsed);
+          const currentFilePercent = ((nodeIdx + 1) / nodes.length);
+          const overallPercent = Math.round(((zipIdx + currentFilePercent) / processList.length) * 100);
+          
+          triggerProgress({
+            currentPercent: overallPercent,
+            wordsPerSecond: wps,
+            lastZipPathIndex: zipIdx,
+            lastNodeIndex: nodeIdx
+          });
         }
       } catch (err: any) {
         if (err.message?.includes('429') || err.message?.includes('quota')) {
-          sendUpdate(getLogStr(ui, 'quotaExceeded'));
+          addLog(getLogStr(ui, 'quotaExceeded'));
           await new Promise(r => setTimeout(r, 65000));
-          nodeIdx--; // Tekrar denemek için geri al
+          nodeIdx--;
           continue;
         }
-        console.error(`Düğüm çevirisi hatası (${path} # ${nodeIdx}):`, err);
+        console.warn(`Node translation failed at ${path}:${nodeIdx}`, err);
       }
     }
 
-    // Dosyayı güncelleyip geri yaz
+    // XHTML uyumluluğu için serialization
     const serializer = new XMLSerializer();
     const serialized = serializer.serializeToString(doc);
     epubZip.file(path, serialized);
-    processedFiles++;
+    processedFilesCount++;
+    triggerProgress({ currentPercent: Math.round((processedFilesCount / processList.length) * 100) });
   }
+
+  addLog(getLogStr(ui, 'saving'));
 
   const epubBlob = await epubZip.generateAsync({ 
     type: "blob", 
@@ -254,9 +268,10 @@ export async function processEpub(
     compressionOptions: { level: 9 }
   });
 
+  cumulativeLogs.push({ timestamp: new Date().toLocaleTimeString(), text: getLogStr(ui, 'finished') });
   onProgress({
     currentFile: processList.length, totalFiles: processList.length, currentPercent: 100,
-    status: 'completed', logs: [{ timestamp: new Date().toLocaleTimeString(), text: getLogStr(ui, 'finished') }],
+    status: 'completed', logs: [...cumulativeLogs],
     strategy, usage: translator.getUsage()
   });
 

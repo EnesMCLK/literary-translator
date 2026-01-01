@@ -21,7 +21,7 @@ export class GeminiTranslator {
   private temperature: number;
   private sourceLanguage: string;
   private targetLanguage: string;
-  private cachePrefix = 'lit-v12-'; // Sürüm güncellemesi
+  private cachePrefix = 'lit-v13-';
   private bookStrategy: BookStrategy | null = null;
   private usage: UsageStats = {
     promptTokens: 0,
@@ -58,35 +58,35 @@ export class GeminiTranslator {
 
   private getSystemInstruction(): string {
     const styleContext = this.bookStrategy 
-      ? `LITERARY CONTEXT:
-         - Genre: ${this.bookStrategy.genre_en}
-         - Tone: ${this.bookStrategy.tone_en}
-         - Author Style: ${this.bookStrategy.author_style_en}
-         - Strategy: ${this.bookStrategy.strategy_en}`
-      : "Professional high-quality literary translation.";
+      ? `BAĞLAM VE ÜSLUP:
+         - Tür: ${this.bookStrategy.genre_en}
+         - Anlatım Tonu: ${this.bookStrategy.tone_en}
+         - Yazarın İmzası: ${this.bookStrategy.author_style_en}
+         - Strateji: ${this.bookStrategy.strategy_en}`
+      : "Profesyonel edebi çeviri.";
 
-    return `ACT AS: A world-class literary translator and stylistic analyst specialized in ${this.sourceLanguage} to ${this.targetLanguage} translation.
+    return `SEN: Dünyaca ünlü bir edebi çevirmensin. Görevin, metni ${this.sourceLanguage} dilinden ${this.targetLanguage} diline, yazarın kaleminden çıkmışçasına çevirmektir.
 
 ${styleContext}
 
-STRICT RULES FOR OUTPUT:
-1. **HTML PRESERVATION:** I will provide HTML snippets. You MUST preserve all HTML tags (e.g., <span>, <em>, <strong>, <a>) and their attributes EXACTLY as they appear. Translate only the text content within the tags.
-2. **LITERARY FIDELITY:** Do not translate word-for-word. Translate the "voice" of the author. If a sentence uses a complex metaphor, recreate that metaphor with equivalent literary weight in ${this.targetLanguage}.
-3. **RAW CONTENT ONLY:** Do not include any explanations, introductions, or "Here is your translation" notes. Return only the translated HTML.
-4. **NO MARKDOWN:** Do not wrap your response in markdown code blocks like \`\`\`html. Return the raw string content.
-5. **UNFILTERED:** Preserve any vulgarity, intensity, or stylistic complexity present in the source. Do not simplify the text.
-6. **NON-EMPTY:** Always provide a translation unless the text is purely numerical or untranslatable names.`;
+KURALLAR:
+1. **HTML KORUMA:** Metin içindeki <span class="...">, <em>, <strong> gibi tüm HTML etiketlerini ve özniteliklerini olduğu gibi bırak. Sadece metni çevir.
+2. **EDEBİ AKIŞ:** Kelimesi kelimesine çeviri yapma. Yazarın üslubunu hedef dilde yeniden yarat. Cümle yapılarını hedef dilin edebi geleneğine uygun şekilde kur.
+3. **YALNIZCA ÇEVİRİ:** Açıklama yapma, giriş cümlesi kurma. Sadece çevrilmiş içeriği döndür.
+4. **MARKDOWN YASAK:** Çıktıyı \`\`\`html içine alma. Ham metin olarak ver.
+5. **DOĞAL DİL:** Akıcılığı bozma. Gerektiğinde deyimleri ve kültürel öğeleri yerelleştir.
+6. **SANSÜRSÜZ:** Orijinal metnin duygusuna, sertliğine veya argo kullanımına sadık kal.`;
   }
 
   async analyzeBook(metadata: any, coverInfo?: { data: string, mimeType: string }, uiLang: UILanguage = 'en'): Promise<BookStrategy> {
     const ai = new GoogleGenAI({ apiKey: this.getApiKey() });
     
-    const prompt = `Deeply analyze this book for a professional translation project from ${this.sourceLanguage} to ${this.targetLanguage}.
+    const prompt = `Analyze this book for translation from ${this.sourceLanguage} to ${this.targetLanguage}:
     Title: ${metadata.title}
     Author: ${metadata.creator}
     Description: ${metadata.description}
     
-    Identify the literary genre, the psychological tone, and the author's stylistic signature. Return the result in strict JSON format. Fields ending in _translated must be in ${uiLang}.`;
+    Identify the genre, tone, and specific authorial style. Return a JSON style blueprint. Fields ending in _translated must be in ${uiLang}.`;
 
     try {
       const response = await ai.models.generateContent({
@@ -123,11 +123,11 @@ STRICT RULES FOR OUTPUT:
       this.bookStrategy = strategy;
       return strategy;
     } catch (err) {
-      console.error("AI Analysis failed:", err);
+      console.error("Analysis failed", err);
       return { 
-        genre_en: "Literary Fiction", tone_en: "Narrative", author_style_en: "Classic", strategy_en: "Maintain flow",
-        genre_translated: "Edebi Kurgu", tone_translated: "Anlatı", author_style_translated: "Klasik", strategy_translated: "Akışı koru",
-        literary_fidelity_note: "Default strategy applied.", detected_creativity_level: 0.3
+        genre_en: "Literature", tone_en: "Narrative", author_style_en: "Fluid", strategy_en: "Fidelity",
+        genre_translated: "Edebiyat", tone_translated: "Anlatı", author_style_translated: "Akıcı", strategy_translated: "Sadakat",
+        literary_fidelity_note: "Varsayılan strateji.", detected_creativity_level: 0.4
       };
     }
   }
@@ -136,9 +136,7 @@ STRICT RULES FOR OUTPUT:
     const trimmed = htmlSnippet.trim();
     if (!trimmed || trimmed.length < 1) return htmlSnippet;
     
-    // Güvenli önbellek anahtarı
-    const safeBase64 = btoa(encodeURIComponent(trimmed)).substring(0, 32);
-    const cacheKey = this.cachePrefix + safeBase64;
+    const cacheKey = this.cachePrefix + btoa(encodeURIComponent(trimmed)).substring(0, 32);
     const cached = localStorage.getItem(cacheKey);
     if (cached) return cached;
 
@@ -161,11 +159,7 @@ STRICT RULES FOR OUTPUT:
       }
 
       let translated = (response.text || "").trim();
-      
-      // Markdown kalıntılarını ve gereksiz boşlukları temizle
-      translated = translated.replace(/^```(html|xhtml|xml)?\n?/i, '')
-                           .replace(/\n?```$/i, '')
-                           .trim();
+      translated = translated.replace(/^```(html|xhtml|xml)?\n?/i, '').replace(/\n?```$/i, '').trim();
 
       if (translated && translated !== trimmed) {
         try { localStorage.setItem(cacheKey, translated); } catch (e) {}
@@ -173,7 +167,7 @@ STRICT RULES FOR OUTPUT:
       
       return translated || trimmed;
     } catch (error: any) {
-      console.error("Translation API call failed:", error);
+      console.error("API Error", error);
       throw error;
     }
   }
