@@ -55,7 +55,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     sourceLang: "KAYNAK DİL", targetLang: "HEDEF DİL", creativity: "YARATICILIK", htmlTags: "HTML ETİKETLERİ",
     systemMonitor: "Sistem İzleyici", startBtn: "Çeviriyi Başlat", stopBtn: "Durdur", downloadBtn: "EPUB İNDİR", pdfBtn: "PDF İNDİR",
     tokens: "TOKEN", speed: "HIZ", eta: "KALAN", processing: "İşleniyor", idle: "Hazır",
-    title: "Literary EPUB Translator", description: "Profesyonel Edebi Çeviri Motoru", settingsTitle: "AYARLAR VE KONFİGÜRASYON",
+    title: "Edebi EPUB Çevirmeni", description: "Profesyonel Edebi Çeviri Motoru", settingsTitle: "AYARLAR VE KONFİGÜRASYON",
     restoreSettings: "Geri Yükle", selectLang: "DİL SEÇİN", error: "HATA", apiStatus: "API DURUMU",
     freeMode: "ÜCRETSİZ MOD", paidMode: "PRO MOD", connectAiStudio: "AI STUDIO BAĞLAN", billingInfo: "Gelişmiş modeller için Paid Key gereklidir.",
     lockedModel: "Bağlantı Gerekli", checkKey: "Doğrulanıyor...", verifyBtn: "AKTİF ET", manualKeyLabel: "MANUEL ANAHTAR",
@@ -233,11 +233,11 @@ const STRINGS_REGISTRY: Record<string, any> = {
   },
   hi: {
     historyTitle: "अनुवाद इतिहास", clearHistory: "सब साफ़ करें", noHistory: "कोई इतिहास नहीं",
-    modelLabel: "मॉडल चयन", uploadLabel: "EPUB अपलोड करें", uploadPlaceholder: "फ़ाइल खींचें या चुनें",
+    modelLabel: "MODEL चयन", uploadLabel: "EPUB अपलोड करें", uploadPlaceholder: "फ़ाइल खींचें या चुनें",
     sourceLang: "स्रोत भाषा", targetLang: "लक्ष्य भाषा", creativity: "रचनात्मकता", htmlTags: "HTML टैग",
     systemMonitor: "सिस्टम मॉनिटर", startBtn: "अनुवाद शुरू करें", stopBtn: "रोकें", downloadBtn: "EPUB डाउनलोड करें", pdfBtn: "PDF",
     tokens: "टोकन", speed: "गति", eta: "शेष समय", processing: "प्रसंस्करण", idle: "तैयार",
-    title: "साहित्यिक EPUB अनुवादक", description: "पेशेवर साहित्यिक अनुवाद इंजन", settingsTitle: "सेटिंग्स और कॉन्फ़िگرेशन",
+    title: "साहित्यिक EPUB अनुवादक", description: "पेशेवर साहित्यिक अनुवाद इंजन", settingsTitle: "सेटिंग्स और कॉन्फ़िगरेशन",
     restoreSettings: "पुनर्स्थापित करें", selectLang: "भाषा चुनें", error: "त्रुटि", apiStatus: "API स्थिति",
     freeMode: "मुफ्त मोड", paidMode: "प्रो मोड", connectAiStudio: "AI STUDIO से जुड़ें", billingInfo: "सशुल्क कुंजी आवश्यक है।",
     lockedModel: "लॉक किया गया", checkKey: "जांच हो रही है...", verifyBtn: "सत्यापित करें", manualKeyLabel: "मैनुअल कुंजी",
@@ -575,9 +575,9 @@ export default function App() {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">{t.uploadLabel}</label>
                   <div className="relative group cursor-pointer">
                     <input type="file" accept=".epub" onChange={(e) => { const f = e.target.files?.[0]; if(f) setFile(f); }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                    <div className={`py-16 border-3 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all duration-500 ${file ? 'bg-indigo-50/20 border-indigo-500 scale-[1.01]' : 'bg-slate-50/50 border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
-                      <Upload size={36} className={file ? 'text-indigo-600' : 'text-slate-300'} />
-                      <span className="text-base font-black text-slate-600 dark:text-slate-300 px-6 text-center leading-tight">{file ? file.name : t.uploadPlaceholder}</span>
+                    <div className={`py-16 border-3 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all duration-500 ${file ? 'bg-indigo-50/20 border-indigo-500 scale-[1.01]' : 'bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'}`}>
+                      <Upload size={36} className={file ? 'text-indigo-600' : 'text-slate-300 dark:text-slate-600'} />
+                      <span className="text-base font-black text-slate-600 dark:text-slate-600 px-6 text-center leading-tight">{file ? file.name : t.uploadPlaceholder}</span>
                       {file && <span className="text-[10px] font-bold text-slate-400 uppercase">{(file.size / 1024 / 1024).toFixed(2)} MB</span>}
                     </div>
                   </div>
