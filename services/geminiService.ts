@@ -13,7 +13,7 @@ export interface BookStrategy {
   author_style_translated: string;
   strategy_translated: string;
   literary_fidelity_note: string;
-  detected_creativity_level: number; // 0.1 to 1.0
+  detected_creativity_level: number;
 }
 
 export class GeminiTranslator {
@@ -21,7 +21,7 @@ export class GeminiTranslator {
   private temperature: number;
   private sourceLanguage: string;
   private targetLanguage: string;
-  private cachePrefix = 'lit-trans-v4-';
+  private cachePrefix = 'lit-v9-';
   private bookStrategy: BookStrategy | null = null;
   private lastTranslation: string = "";
   private usage: UsageStats = {
@@ -34,7 +34,7 @@ export class GeminiTranslator {
     temperature: number = 0.3, 
     sourceLanguage: string = 'Auto', 
     targetLanguage: string = 'Turkish',
-    modelId: string = 'gemini-3-flash-preview'
+    modelId: string = 'gemini-flash-lite-latest'
   ) {
     this.temperature = temperature;
     this.sourceLanguage = sourceLanguage;
@@ -43,12 +43,12 @@ export class GeminiTranslator {
   }
 
   private getApiKey(): string {
-    return (window as any).manualApiKey || process.env.API_KEY || "";
+    return process.env.API_KEY || "";
   }
 
   setStrategy(strategy: BookStrategy) {
     this.bookStrategy = strategy;
-    // Apply dynamic temperature based on strategy and user constraints
+    // Eğer stratejide bir yaratıcılık seviyesi belirlenmişse onu kullan, yoksa varsayılanı koru
     if (strategy.detected_creativity_level) {
       this.temperature = strategy.detected_creativity_level;
     }
@@ -67,101 +67,50 @@ export class GeminiTranslator {
   }
 
   private getSystemInstruction(): string {
-    const contextPart = this.bookStrategy 
-      ? `LITERARY MASTER PROFILE:
-        - Author Fingerprint: ${this.bookStrategy.author_style_en}
-        - Genre & Tone: ${this.bookStrategy.genre_en} (${this.bookStrategy.tone_en})
-        - Execution Strategy: ${this.bookStrategy.strategy_en}`
-      : "Apply expert-level literary translation.";
+    const styleContext = this.bookStrategy 
+      ? `AUTHENTIC AUTHOR PROFILE:
+         - Genre: ${this.bookStrategy.genre_en}
+         - Style: ${this.bookStrategy.author_style_en}
+         - Narrative Tone: ${this.bookStrategy.tone_en}
+         - Translation Strategy: ${this.bookStrategy.strategy_en}`
+      : "High-end literary translation with focus on stylistic fidelity.";
 
-    return `ACT AS: A world-class award-winning literary translator.
+    return `ACT AS: A master literary translator with dual-native fluency in ${this.sourceLanguage} and ${this.targetLanguage}. 
 
 MISSION:
-Translate text from ${this.sourceLanguage} to ${this.targetLanguage} with absolute stylistic precision.
+Transfer the literary 'soul' and specific authorial voice of the input text into ${this.targetLanguage}.
 
-${contextPart}
+${styleContext}
 
-CORE MANDATES:
-1. **NO CENSORSHIP:** Translate exactly what the author wrote, including profanity, controversial themes, or extreme emotions. Do not sanitize the text.
-2. **STYLE OVER LITERALISM:** Capture the 'ghost' of the author. If the author is poetic, be poetic. If they are gritty and concise, mimic that rhythm.
-3. **HTML INTEGRITY:** Never touch tags (<p>, <span>, etc.) or classes. Only translate text content.
-4. **VOCABULARY DEPTH:** Use the full richness of ${this.targetLanguage}. Avoid generic words; use terms that match the book's era and social context.
-5. **CONSISTENCY:** Maintain character voices and specialized terminology throughout the entire book.
-
-OUTPUT: Provide only the translated HTML. No commentary.`;
+STRICT OPERATIONAL GUIDELINES:
+1. **COMPULSORY TRANSLATION:** You MUST translate the text. Never return the original text unless it is a proper noun or an untranslatable technical term.
+2. **STYLE OVER LITERALISM:** Do not translate word-for-word. Capture the rhythm, poetic resonance, and emotional subtext. Write as the original author would have written if their native tongue was ${this.targetLanguage}.
+3. **HTML INTEGRITY:** You will receive HTML snippets. You MUST preserve all HTML tags (<p>, <span>, <i>, class="", etc.) exactly. ONLY translate the text content inside.
+4. **RICH VOCABULARY:** Utilize the full depth and nuance of ${this.targetLanguage}. Match the era, social register, and aesthetic density of the original work.
+5. **NO CENSORSHIP:** Maintain absolute fidelity to the source. Do not sanitize, soften, or moralize any content.
+6. **NO COMMENTARY:** Return ONLY the translated HTML. No introductions or notes.`;
   }
 
   private getCacheKey(text: string): string {
-    return `${this.cachePrefix}${this.sourceLanguage}-${this.targetLanguage}-${this.temperature}-${this.modelName}-${text.trim()}`;
-  }
-
-  private getFromCache(text: string): string | null {
-    try {
-      return localStorage.getItem(this.getCacheKey(text));
-    } catch {
-      return null;
-    }
-  }
-
-  private saveToCache(text: string, translated: string): void {
-    try {
-      localStorage.setItem(this.getCacheKey(text), translated);
-    } catch (e: any) {
-      if (e.name === 'QuotaExceededError') {
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key?.startsWith(this.cachePrefix)) keysToRemove.push(key);
-        }
-        keysToRemove.forEach(k => localStorage.removeItem(k));
-      }
-    }
-  }
-
-  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
-    let lastError: any;
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        return await fn();
-      } catch (error: any) {
-        lastError = error;
-        if (error?.status === 429) {
-          await new Promise(r => setTimeout(r, Math.pow(2, i) * 2000));
-          continue;
-        }
-        throw error;
-      }
-    }
-    throw lastError;
+    const hash = text.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
+    return `${this.cachePrefix}${this.sourceLanguage}-${this.targetLanguage}-${this.modelName}-${hash}`;
   }
 
   async analyzeBook(metadata: any, coverInfo?: { data: string, mimeType: string }, uiLang: UILanguage = 'en'): Promise<BookStrategy> {
-    // Initializing with mandatory structure as per guidelines
     const ai = new GoogleGenAI({ apiKey: this.getApiKey() });
     
-    const prompt = `Perform a deep literary analysis in the SOURCE language of this book. 
-    Identify the author's unique style, historical context, and linguistic complexity.
-    
-    BOOK DATA:
+    const prompt = `Perform a deep literary and stylistic analysis of this book for translation from ${this.sourceLanguage} to ${this.targetLanguage}.
     Title: ${metadata.title}
     Author: ${metadata.creator}
-    Snippet: ${metadata.description}
-
-    REQUIREMENTS for the JSON response:
-    1. 'genre_en', 'tone_en', 'author_style_en', 'strategy_en' must be in English.
-    2. 'genre_translated', 'tone_translated', 'author_style_translated', 'strategy_translated' must be in the UI language (${uiLang}).
-    3. 'detected_creativity_level': Calculate a value from 0.1 to 0.7. 
-       - If technical/non-fiction/factual: MAX 0.3.
-       - If literary/fiction/highly creative: 0.4 to 0.7.
-    4. ENSURE NO CENSORSHIP is recommended in the strategy.`;
+    Description: ${metadata.description}
+    
+    Your goal is to define a "style blueprint" that will guide the subsequent translation.
+    Return the response strictly in JSON format. Ensure fields for the UI are in ${uiLang}.`;
 
     try {
-      const parts: any[] = [{ text: prompt }];
-      if (coverInfo) parts.push({ inlineData: { mimeType: coverInfo.mimeType, data: coverInfo.data } });
-
       const response = await ai.models.generateContent({
-        model: this.modelName,
-        contents: { parts },
+        model: 'gemini-3-pro-preview', // Analiz için en zeki modeli kullan
+        contents: prompt,
         config: { 
           responseMimeType: "application/json",
           responseSchema: {
@@ -184,46 +133,82 @@ OUTPUT: Provide only the translated HTML. No commentary.`;
       });
 
       if (response.usageMetadata) {
+        this.usage.promptTokens += response.usageMetadata.promptTokenCount || 0;
+        this.usage.candidatesTokens += response.usageMetadata.candidatesTokenCount || 0;
         this.usage.totalTokens += response.usageMetadata.totalTokenCount || 0;
       }
 
       const strategy = JSON.parse(response.text || '{}');
       this.bookStrategy = strategy;
-      this.temperature = strategy.detected_creativity_level || 0.3;
       return strategy;
-    } catch {
+    } catch (err) {
+      console.error("AI Analysis failed:", err);
       return { 
-        genre_en: "General Fiction", tone_en: "Neutral", author_style_en: "Standard.", strategy_en: "General translation.",
-        genre_translated: "General Fiction", tone_translated: "Neutral", author_style_translated: "Standard.", strategy_translated: "Fidelity.",
-        literary_fidelity_note: "Default analysis.", detected_creativity_level: 0.3
+        genre_en: "Literary Fiction", tone_en: "Narrative", author_style_en: "Fluid and descriptive", strategy_en: "Maintain flow",
+        genre_translated: "Edebi Kurgu", tone_translated: "Anlatı", author_style_translated: "Akıcı ve betimleyici", strategy_translated: "Akışı koru",
+        literary_fidelity_note: "Default strategy.", detected_creativity_level: 0.4
       };
     }
   }
 
   async translateSingle(htmlSnippet: string): Promise<string> {
-    if (!htmlSnippet?.trim()) return htmlSnippet;
-    const cached = this.getFromCache(htmlSnippet);
-    if (cached) { this.lastTranslation = cached; return cached; }
+    const trimmed = htmlSnippet.trim();
+    if (!trimmed || trimmed.length < 2) return htmlSnippet;
+    
+    // Check cache
+    const cacheKey = this.getCacheKey(trimmed);
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      this.lastTranslation = cached;
+      return cached;
+    }
 
-    const result = await this.withRetry(async () => {
-      // Initializing with mandatory structure as per guidelines
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: this.getApiKey() });
+    
+    try {
       const response = await ai.models.generateContent({
         model: this.modelName,
-        contents: htmlSnippet,
-        config: { systemInstruction: this.getSystemInstruction(), temperature: this.temperature }
+        contents: trimmed,
+        config: { 
+          systemInstruction: this.getSystemInstruction(), 
+          temperature: this.temperature 
+        }
       });
 
       if (response.usageMetadata) {
+        this.usage.promptTokens += response.usageMetadata.promptTokenCount || 0;
+        this.usage.candidatesTokens += response.usageMetadata.candidatesTokenCount || 0;
         this.usage.totalTokens += response.usageMetadata.totalTokenCount || 0;
       }
 
-      let translatedText = response.text || "";
-      return translatedText.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
-    });
+      let translated = response.text || trimmed;
+      // Cleanup markdown leftovers
+      translated = translated.replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
+      
+      // Basic validation: if translation is same as original and contains alphanumeric chars, it might have failed
+      const isAlphanumeric = /[a-zA-Z0-9]/.test(trimmed);
+      if (translated === trimmed && isAlphanumeric && this.sourceLanguage !== this.targetLanguage) {
+        // Retry once with a stricter temperature if same
+        const retryResponse = await ai.models.generateContent({
+          model: this.modelName,
+          contents: trimmed,
+          config: { 
+            systemInstruction: this.getSystemInstruction() + "\n\nCRITICAL: You returned the source text last time. You MUST translate to " + this.targetLanguage + " now.", 
+            temperature: 0.2 
+          }
+        });
+        translated = (retryResponse.text || trimmed).replace(/^```html\n?/, '').replace(/\n?```$/, '').trim();
+      }
 
-    this.saveToCache(htmlSnippet, result);
-    this.lastTranslation = result;
-    return result;
+      if (translated && translated !== trimmed) {
+        try { localStorage.setItem(cacheKey, translated); } catch (e) { /* Storage full */ }
+      }
+      
+      this.lastTranslation = translated;
+      return translated;
+    } catch (error: any) {
+      console.error("Translation call failed:", error);
+      throw error; // Rethrow to let epubService handle retry/pause
+    }
   }
 }

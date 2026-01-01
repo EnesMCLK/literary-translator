@@ -10,7 +10,7 @@ import {
   BookType
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
-import { processEpub, TranslationProgress, TranslationSettings } from './services/epubService';
+import { processEpub, TranslationProgress, TranslationSettings, ResumeInfo } from './services/epubService';
 import { ProgressBar } from './components/ProgressBar';
 import { LogViewer } from './components/LogViewer';
 
@@ -53,213 +53,230 @@ const STRINGS_REGISTRY: Record<string, any> = {
     historyTitle: "ÇEVİRİ GEÇMİŞİ", clearHistory: "Tümünü Temizle", noHistory: "Kayıt yok",
     modelLabel: "MODEL SEÇİMİ", uploadLabel: "EPUB YÜKLEME", uploadPlaceholder: "Dosya sürükle veya seç",
     sourceLang: "KAYNAK DİL", targetLang: "HEDEF DİL", creativity: "YARATICILIK", htmlTags: "HTML ETİKETLERİ",
-    systemMonitor: "Sistem İzleyici", startBtn: "Çeviriyi Başlat", stopBtn: "Durdur", downloadBtn: "EPUB İNDİR", pdfBtn: "PDF İNDİR",
+    systemMonitor: "Sistem İzleyici", startBtn: "Çeviriyi Başlat", resumeBtn: "Kaldığı Yerden Devam Et", stopBtn: "Durdur", downloadBtn: "EPUB İNDİR", pdfBtn: "PDF İNDİR",
     tokens: "TOKEN", speed: "HIZ", eta: "KALAN", processing: "İşleniyor", idle: "Hazır",
     title: "Edebi EPUB Çevirmeni", description: "Profesyonel Edebi Çeviri Motoru", settingsTitle: "AYARLAR VE KONFİGÜRASYON",
     restoreSettings: "Geri Yükle", selectLang: "DİL SEÇİN", error: "HATA", apiStatus: "API DURUMU",
     freeMode: "ÜCRETSİZ MOD", paidMode: "PRO MOD", connectAiStudio: "AI STUDIO BAĞLAN", billingInfo: "Gelişmiş modeller için Paid Key gereklidir.",
     lockedModel: "Bağlantı Gerekli", checkKey: "Doğrulanıyor...", verifyBtn: "AKTİF ET", manualKeyLabel: "MANUEL ANAHTAR",
     manualKeyPlaceholder: "API Anahtarınızı buraya yapıştırın...", aiAnalysis: "YAPAY ZEKA ANALİZİ", preparing: "HAZIRLIK BEKLENİYOR",
-    systemLogsReady: "Sistem Girişleri Bekleniyor...", verifyingError: "Doğrulama hatası!", literal: "Sadık", creative: "Yaratıcı"
+    systemLogsReady: "Sistem Girişleri Bekleniyor...", verifyingError: "Doğrulama hatası!", literal: "Sadık", creative: "Yaratıcı",
+    quotaError: "KOTA DOLDU: Lütfen yaklaşık 60 saniye bekleyin. Çeviri durduruldu, kaldığınız yerden devam edebilirsiniz."
   },
   en: {
     historyTitle: "TRANSLATION HISTORY", clearHistory: "Clear All", noHistory: "No history",
     modelLabel: "MODEL SELECTION", uploadLabel: "UPLOAD EPUB", uploadPlaceholder: "Drag or select file",
     sourceLang: "SOURCE LANG", targetLang: "TARGET LANG", creativity: "CREATIVITY", htmlTags: "HTML TAGS",
-    systemMonitor: "System Monitor", startBtn: "Start Translation", stopBtn: "Stop", downloadBtn: "DOWNLOAD EPUB", pdfBtn: "DOWNLOAD PDF",
+    systemMonitor: "System Monitor", startBtn: "Start Translation", resumeBtn: "Resume Translation", stopBtn: "Stop", downloadBtn: "DOWNLOAD EPUB", pdfBtn: "DOWNLOAD PDF",
     tokens: "TOKENS", speed: "SPEED", eta: "ETA", processing: "Processing", idle: "Idle",
     title: "Literary EPUB Translator", description: "Professional Literary Translation Engine", settingsTitle: "SETTINGS & CONFIG",
     restoreSettings: "Restore", selectLang: "SELECT LANGUAGE", error: "ERROR", apiStatus: "API STATUS",
     freeMode: "FREE MODE", paidMode: "PRO MODE", connectAiStudio: "CONNECT AI STUDIO", billingInfo: "Paid Key required for PRO models.",
     lockedModel: "Locked", checkKey: "Checking...", verifyBtn: "VERIFY", manualKeyLabel: "MANUAL KEY",
     manualKeyPlaceholder: "Paste your API key...", aiAnalysis: "AI ANALYSIS", preparing: "AWAITING PREP",
-    systemLogsReady: "Waiting for logs...", verifyingError: "Key error!", literal: "Literal", creative: "Creative"
+    systemLogsReady: "Waiting for logs...", verifyingError: "Key error!", literal: "Literal", creative: "Creative",
+    quotaError: "QUOTA EXCEEDED: Please wait about 60 seconds. Translation paused, you can resume later."
   },
   zh: {
     historyTitle: "翻译历史", clearHistory: "全部清除", noHistory: "暂无记录",
     modelLabel: "模型选择", uploadLabel: "上传 EPUB", uploadPlaceholder: "拖拽或选择文件",
     sourceLang: "源语言", targetLang: "目标语言", creativity: "创造力", htmlTags: "HTML 标签",
-    systemMonitor: "系统监控", startBtn: "开始翻译", stopBtn: "停止", downloadBtn: "下载 EPUB", pdfBtn: "下载 PDF",
+    systemMonitor: "系统监控", startBtn: "开始翻译", resumeBtn: "继续翻译", stopBtn: "停止", downloadBtn: "下载 EPUB", pdfBtn: "下载 PDF",
     tokens: "代币", speed: "速度", eta: "剩余时间", processing: "处理中", idle: "空闲",
     title: "文学 EPUB 翻译官", description: "专业文学翻译引擎", settingsTitle: "设置与配置",
     restoreSettings: "恢复", selectLang: "选择语言", error: "错误", apiStatus: "API 状态",
     freeMode: "免费模式", paidMode: "专业模式", connectAiStudio: "连接 AI STUDIO", billingInfo: "高级模型需要付费密钥",
     lockedModel: "未解锁", checkKey: "正在验证...", verifyBtn: "验证并激活", manualKeyLabel: "手动密钥",
     manualKeyPlaceholder: "在此粘贴 API 密钥...", aiAnalysis: "AI 分析", preparing: "正在准备",
-    systemLogsReady: "等待系统日志...", verifyingError: "密钥验证失败", literal: "直译", creative: "意译"
+    systemLogsReady: "等待系统日志...", verifyingError: "密钥验证失败", literal: "直译", creative: "意译",
+    quotaError: "配额超限：请等待约 60 秒。翻译已暂停，您可以稍后继续。"
   },
   fr: {
     historyTitle: "HISTORIQUE", clearHistory: "Tout effacer", noHistory: "Aucun historique",
     modelLabel: "MODÈLE", uploadLabel: "CHARGER EPUB", uploadPlaceholder: "Glisser ou choisir un fichier",
     sourceLang: "LANGUE SOURCE", targetLang: "LANGUE CIBLE", creativity: "CRÉATIVITÉ", htmlTags: "TAGS HTML",
-    systemMonitor: "Moniteur Système", startBtn: "Traduire", stopBtn: "Arrêter", downloadBtn: "TÉLÉCHARGER", pdfBtn: "PDF",
+    systemMonitor: "Moniteur Système", startBtn: "Traduire", resumeBtn: "Reprendre la traduction", stopBtn: "Arrêter", downloadBtn: "TÉLÉCHARGER", pdfBtn: "PDF",
     tokens: "TOKENS", speed: "VITESSE", eta: "RESTANT", processing: "Traitement", idle: "Prêt",
     title: "Traducteur EPUB Littéraire", description: "Moteur de Traduction Littéraire", settingsTitle: "CONFIGURATION",
     restoreSettings: "Restaurer", selectLang: "CHOISIR LANGUE", error: "ERREUR", apiStatus: "STATUT API",
     freeMode: "MODE GRATUIT", paidMode: "MODE PRO", connectAiStudio: "LIER AI STUDIO", billingInfo: "Clé payante requise.",
     lockedModel: "Verrouillé", checkKey: "Vérification...", verifyBtn: "ACTIVER", manualKeyLabel: "CLÉ MANUELLE",
     manualKeyPlaceholder: "Collez votre clé ici...", aiAnalysis: "ANALYSE AI", preparing: "PRÉPARATION",
-    systemLogsReady: "En attente de logs...", verifyingError: "Clé invalide!", literal: "Fidèle", creative: "Créatif"
+    systemLogsReady: "En attente de logs...", verifyingError: "Clé invalide!", literal: "Fidèle", creative: "Créatif",
+    quotaError: "QUOTA ÉPUISÉ : Veuillez patienter environ 60 secondes. Traduction en pause."
   },
   de: {
     historyTitle: "VERLAUF", clearHistory: "Alle löschen", noHistory: "Kein Verlauf",
     modelLabel: "MODELLWAHL", uploadLabel: "EPUB HOCHLADEN", uploadPlaceholder: "Datei wählen",
     sourceLang: "QUELLSPRACHE", targetLang: "ZIELSPRACHE", creativity: "KREATIVITÄT", htmlTags: "HTML TAGS",
-    systemMonitor: "System-Monitor", startBtn: "Starten", stopBtn: "Stopp", downloadBtn: "DOWNLOAD", pdfBtn: "PDF",
+    systemMonitor: "System-Monitor", startBtn: "Starten", resumeBtn: "Fortsetzen", stopBtn: "Stopp", downloadBtn: "DOWNLOAD", pdfBtn: "PDF",
     tokens: "TOKENS", speed: "TEMPO", eta: "RESTZEIT", processing: "Läuft", idle: "Bereit",
     title: "Literarischer EPUB-Übersetzer", description: "Professionelle Literatur-Engine", settingsTitle: "EINSTELLUNGEN",
     restoreSettings: "Wiederherstellen", selectLang: "SPRACHE WÄHLEN", error: "FEHLER", apiStatus: "API STATUS",
     freeMode: "GRATIS MODUS", paidMode: "PRO MODUS", connectAiStudio: "AI STUDIO VERBINDEN", billingInfo: "Bezahl-Key erforderlich.",
     lockedModel: "Gesperrt", checkKey: "Prüfe...", verifyBtn: "AKTIVIEREN", manualKeyLabel: "MANUELLER KEY",
     manualKeyPlaceholder: "API-Key einfügen...", aiAnalysis: "KI ANALYSE", preparing: "BEREITE VOR",
-    systemLogsReady: "Warte auf Logs...", verifyingError: "Key Fehler!", literal: "Wörtlich", creative: "Kreativ"
+    systemLogsReady: "Warte auf Logs...", verifyingError: "Key Fehler!", literal: "Wörtlich", creative: "Kreativ",
+    quotaError: "QUOTA ÜBERSCHRITTEN: Bitte ca. 60 Sek. warten. Übersetzung pausiert."
   },
   es: {
     historyTitle: "HISTORIAL", clearHistory: "Borrar todo", noHistory: "Sin historial",
     modelLabel: "MODELO", uploadLabel: "SUBIR EPUB", uploadPlaceholder: "Subir archivo",
     sourceLang: "ORIGEN", targetLang: "DESTINO", creativity: "CREATIVIDAD", htmlTags: "ETIQUETAS HTML",
-    systemMonitor: "Monitor", startBtn: "Iniciar", stopBtn: "Parar", downloadBtn: "DESCARGAR", pdfBtn: "PDF",
+    systemMonitor: "Monitor", startBtn: "Iniciar", resumeBtn: "Reanudar", stopBtn: "Parar", downloadBtn: "DESCARGAR", pdfBtn: "PDF",
     tokens: "TOKENS", speed: "VELOCIDAD", eta: "FALTA", processing: "Procesando", idle: "Listo",
     title: "Traductor de EPUB Literario", description: "Motor Literario Profesional", settingsTitle: "AJUSTES",
     restoreSettings: "Restaurar", selectLang: "ELEGIR IDIOMA", error: "ERROR", apiStatus: "ESTADO API",
     freeMode: "MODO GRATIS", paidMode: "MODO PRO", connectAiStudio: "CONECTAR AI STUDIO", billingInfo: "Requiere llave de pago.",
     lockedModel: "Bloqueado", checkKey: "Verificando...", verifyBtn: "ACTIVAR", manualKeyLabel: "LLAVE MANUAL",
     manualKeyPlaceholder: "Pegue su API Key...", aiAnalysis: "ANÁLISIS AI", preparing: "PREPARANDO",
-    systemLogsReady: "Esperando registros...", verifyingError: "Llave inválida!", literal: "Literal", creative: "Creativo"
+    systemLogsReady: "Esperando registros...", verifyingError: "Llave inválida!", literal: "Literal", creative: "Creativo",
+    quotaError: "CUOTA EXCEDIDA: Espere unos 60 segundos. Traducción pausada."
   },
   ru: {
     historyTitle: "ИСТОРИЯ", clearHistory: "Очистить все", noHistory: "Нет истории",
     modelLabel: "ВЫБОР МОДЕЛИ", uploadLabel: "ЗАГРУЗИТЬ EPUB", uploadPlaceholder: "Выберите файл",
     sourceLang: "ИСТОЧНИК", targetLang: "ЦЕЛЬ", creativity: "КРЕАТИВНОСТЬ", htmlTags: "HTML ТЕГИ",
-    systemMonitor: "Монитор системы", startBtn: "Начать перевод", stopBtn: "Стоп", downloadBtn: "СКАЧАТЬ", pdfBtn: "PDF",
+    systemMonitor: "Монитор системы", startBtn: "Начать перевод", resumeBtn: "Продолжить", stopBtn: "Стоп", downloadBtn: "СКАЧАТЬ", pdfBtn: "PDF",
     tokens: "ТОКЕНЫ", speed: "СКОРОСТЬ", eta: "ОСТАЛОСЬ", processing: "В процессе", idle: "Готов",
     title: "Литературный EPUB Переводчик", description: "Профессиональный движок", settingsTitle: "НАСТРОЙКИ",
     restoreSettings: "Восстановить", selectLang: "ВЫБОР ЯЗЫКА", error: "ОШИБКА", apiStatus: "СТАТУС API",
     freeMode: "БЕСПЛАТНО", paidMode: "PRO МОД", connectAiStudio: "AI STUDIO", billingInfo: "Нужен платный ключ.",
     lockedModel: "Заблокировано", checkKey: "Проверка...", verifyBtn: "АКТИВИРОВАТЬ", manualKeyLabel: "КЛЮЧ ВРУЧНУЮ",
     manualKeyPlaceholder: "Вставьте API ключ...", aiAnalysis: "AI АНАЛИЗ", preparing: "ПОДГОТОВКА",
-    systemLogsReady: "Ожидание логов...", verifyingError: "Ошибка ключа!", literal: "Буквально", creative: "Творчески"
+    systemLogsReady: "Ожидание логов...", verifyingError: "Ошибка ключа!", literal: "Буквально", creative: "Творчески",
+    quotaError: "КВОТА ИСЧЕРПАНА: Подождите около 60 секунд. Перевод приостановлен."
   },
   it: {
     historyTitle: "CRONOLOGIA", clearHistory: "Cancella tutto", noHistory: "Nessuna cronologia",
     modelLabel: "MODELLO", uploadLabel: "CARICA EPUB", uploadPlaceholder: "Trascina o scegli file",
     sourceLang: "LINGUA ORIGINE", targetLang: "LINGUA DESTINAZIONE", creativity: "CREATIVITÀ", htmlTags: "TAG HTML",
-    systemMonitor: "Monitor di Sistema", startBtn: "Avvia Traduzione", stopBtn: "Ferma", downloadBtn: "SCARICA EPUB", pdfBtn: "PDF",
+    systemMonitor: "Monitor di Sistema", startBtn: "Avvia Traduzione", resumeBtn: "Riprendi", stopBtn: "Ferma", downloadBtn: "SCARICA EPUB", pdfBtn: "PDF",
     tokens: "TOKEN", speed: "VELOCITÀ", eta: "RIMANENTE", processing: "In corso", idle: "Pronto",
     title: "Traduttore EPUB Letterario", description: "Motore di Traduzione Professionale", settingsTitle: "IMPOSTAZIONI",
     restoreSettings: "Ripristina", selectLang: "SCEGLI LINGUA", error: "ERRORE", apiStatus: "STATO API",
     freeMode: "MODALITÀ GRATUITA", paidMode: "MODALITÀ PRO", connectAiStudio: "CONNETTI AI STUDIO", billingInfo: "Chiave a pagamento richiesta.",
     lockedModel: "Bloccato", checkKey: "Verifica...", verifyBtn: "ATTIVA", manualKeyLabel: "CHIAVE MANUALE",
     manualKeyPlaceholder: "Incolla qui la tua API key...", aiAnalysis: "ANALISI AI", preparing: "PREPARAZIONE",
-    systemLogsReady: "In attesa di log...", verifyingError: "Errore chiave!", literal: "Letterale", creative: "Creativa"
+    systemLogsReady: "In attesa di log...", verifyingError: "Errore chiave!", literal: "Letterale", creative: "Creativa",
+    quotaError: "QUOTA SUPERATA: Attendi circa 60 secondi. Traduzione in pausa."
   },
   ja: {
     historyTitle: "翻訳履歴", clearHistory: "すべて消去", noHistory: "履歴なし",
     modelLabel: "モデル選択", uploadLabel: "EPUBをアップロード", uploadPlaceholder: "ファイルをドラッグまたは選択",
     sourceLang: "元の言語", targetLang: "翻訳先の言語", creativity: "創造性", htmlTags: "HTMLタグ",
-    systemMonitor: "システムモニター", startBtn: "翻訳を開始", stopBtn: "停止", downloadBtn: "EPUBをダウンロード", pdfBtn: "PDF",
+    systemMonitor: "システムモニター", startBtn: "翻訳を開始", resumeBtn: "再開する", stopBtn: "停止", downloadBtn: "EPUBをダウンロード", pdfBtn: "PDF",
     tokens: "トークン", speed: "速度", eta: "残り時間", processing: "処理中", idle: "待機中",
     title: "文学 EPUB 翻訳", description: "プロフェッショナル文学翻訳エンジン", settingsTitle: "設定と構成",
     restoreSettings: "復元", selectLang: "言語を選択", error: "エラー", apiStatus: "APIステータス",
     freeMode: "無料モード", paidMode: "プロモード", connectAiStudio: "AI STUDIOに接続", billingInfo: "有料キーが必要です。",
     lockedModel: "ロック中", checkKey: "確認中...", verifyBtn: "有効化", manualKeyLabel: "手動キー",
     manualKeyPlaceholder: "ここにAPIキーを貼り付けてください...", aiAnalysis: "AI分析", preparing: "準備中",
-    systemLogsReady: "ログを待機中...", verifyingError: "キーエラー！", literal: "直訳", creative: "意訳"
+    systemLogsReady: "ログを待機中...", verifyingError: "キーエラー！", literal: "直訳", creative: "意訳",
+    quotaError: "クォータ制限超過: 約60秒待機してください。翻訳を一時停止しました。"
   },
   ko: {
     historyTitle: "번역 기록", clearHistory: "모두 지우기", noHistory: "기록 없음",
     modelLabel: "모델 선택", uploadLabel: "EPUB 업로드", uploadPlaceholder: "파일 드래그 또는 선택",
     sourceLang: "원본 언어", targetLang: "대상 언어", creativity: "창의성", htmlTags: "HTML 태그",
-    systemMonitor: "시스템 모니터", startBtn: "번역 시작", stopBtn: "중지", downloadBtn: "EPUB 다운로드", pdfBtn: "PDF",
+    systemMonitor: "시스템 모니터", startBtn: "번역 시작", resumeBtn: "이어서 번역", stopBtn: "중지", downloadBtn: "EPUB 다운로드", pdfBtn: "PDF",
     tokens: "토큰", speed: "속도", eta: "남은 시간", processing: "처리 중", idle: "준비됨",
     title: "문학 EPUB 번역기", description: "전문 문학 번역 엔진", settingsTitle: "설정 및 구성",
     restoreSettings: "복원", selectLang: "언어 선택", error: "오류", apiStatus: "API 상태",
     freeMode: "무료 모드", paidMode: "프로 모드", connectAiStudio: "AI STUDIO 연결", billingInfo: "유료 키가 필요합니다.",
     lockedModel: "잠김", checkKey: "확인 중...", verifyBtn: "활성화", manualKeyLabel: "수동 키",
     manualKeyPlaceholder: "여기에 API 키를 붙여넣으세요...", aiAnalysis: "AI 분석", preparing: "준비 중",
-    systemLogsReady: "로그 대기 중...", verifyingError: "키 오류!", literal: "직역", creative: "의역"
+    systemLogsReady: "로그 대기 중...", verifyingError: "키 오류!", literal: "직역", creative: "의역",
+    quotaError: "할당량 초과: 약 60초 동안 기다려 주세요. 번역이 중지되었습니다."
   },
   ar: {
     historyTitle: "سجل الترجمة", clearHistory: "مسح الكل", noHistory: "لا يوجد سجل",
     modelLabel: "اختيار النموذج", uploadLabel: "تحميل EPUB", uploadPlaceholder: "اسحب أو اختر ملفاً",
     sourceLang: "اللغة المصدر", targetLang: "اللغة الهدف", creativity: "الإبداع", htmlTags: "علامات HTML",
-    systemMonitor: "مراقب النظام", startBtn: "بدء الترجمة", stopBtn: "إيقاف", downloadBtn: "تحميل EPUB", pdfBtn: "PDF",
+    systemMonitor: "مراقب النظام", startBtn: "بدء الترجمة", resumeBtn: "استئناف", stopBtn: "إيقاف", downloadBtn: "تحميل EPUB", pdfBtn: "PDF",
     tokens: "التوكينز", speed: "السرعة", eta: "المتبقي", processing: "جاري المعالجة", idle: "جاهز",
     title: "مترجم EPUB الأدبي", description: "محرك ترجمة أدبية احترافية", settingsTitle: "الإعدادات",
     restoreSettings: "استعادة", selectLang: "اختر اللغة", error: "خطأ", apiStatus: "حالة API",
     freeMode: "الوضع المجاني", paidMode: "الوضع المدفوع", connectAiStudio: "اتصال AI STUDIO", billingInfo: "مفتاح مدفوع مطلوب.",
     lockedModel: "مغلق", checkKey: "جاري التحقق...", verifyBtn: "تفعيل", manualKeyLabel: "مفتاح يدوي",
     manualKeyPlaceholder: "ألصق مفتاح API هنا...", aiAnalysis: "تحليل AI", preparing: "جاري التحضير",
-    systemLogsReady: "بانتظار السجلات...", verifyingError: "خطأ في المفتاح!", literal: "حرفي", creative: "إبداعي"
+    systemLogsReady: "بانتظار السجلات...", verifyingError: "خطأ في المفتاح!", literal: "حرفي", creative: "إبداعي",
+    quotaError: "تم تجاوز الحصة: يرجى الانتظار حوالي 60 ثانية. تم إيقاف الترجمة مؤقتاً."
   },
   pt: {
     historyTitle: "HISTÓRICO", clearHistory: "Limpar tudo", noHistory: "Sem histórico",
     modelLabel: "MODELO", uploadLabel: "CARREGAR EPUB", uploadPlaceholder: "Arraste ou escolha o arquivo",
     sourceLang: "IDIOMA ORIGEM", targetLang: "IDIOMA DESTINO", creativity: "CRIATIVIDADE", htmlTags: "TAGS HTML",
-    systemMonitor: "Monitor de Sistema", startBtn: "Iniciar Tradução", stopBtn: "Parar", downloadBtn: "BAIXAR EPUB", pdfBtn: "PDF",
+    systemMonitor: "Monitor de Sistema", startBtn: "Iniciar Tradução", resumeBtn: "Retomar", stopBtn: "Parar", downloadBtn: "BAIXAR EPUB", pdfBtn: "PDF",
     tokens: "TOKENS", speed: "VELOCIDADE", eta: "RESTANTE", processing: "Processando", idle: "Pronto",
     title: "Tradutor Literário de EPUB", description: "Motor de Tradução Literária Profissional", settingsTitle: "CONFIGURAÇÕES",
     restoreSettings: "Restaurar", selectLang: "ESCOLHER IDIOMA", error: "ERRO", apiStatus: "STATUS API",
     freeMode: "MODO GRÁTIS", paidMode: "MODO PRO", connectAiStudio: "CONNETAR AI STUDIO", billingInfo: "Chave paga necessária.",
     lockedModel: "Bloqueado", checkKey: "Verificando...", verifyBtn: "ATIVAR", manualKeyLabel: "CHAVE MANUAL",
     manualKeyPlaceholder: "Cole sua API key aqui...", aiAnalysis: "ANÁLISE AI", preparing: "PREPARANDO",
-    systemLogsReady: "Aguardando logs...", verifyingError: "Erro na chave!", literal: "Literal", creative: "Criativa"
+    systemLogsReady: "Aguardando logs...", verifyingError: "Erro na chave!", literal: "Literal", creative: "Criativa",
+    quotaError: "COTA EXCEDIDA: Aguarde cerca de 60 segundos. Tradução pausada."
   },
   nl: {
     historyTitle: "GESCHIEDENIS", clearHistory: "Wis alles", noHistory: "Geen geschiedenis",
     modelLabel: "MODEL", uploadLabel: "EPUB UPLOADEN", uploadPlaceholder: "Sleep of kies bestand",
     sourceLang: "BRONTAAL", targetLang: "DOELTAAL", creativity: "CREATIVITEIT", htmlTags: "HTML TAGS",
-    systemMonitor: "Systeemmonitor", startBtn: "Start Vertaling", stopBtn: "Stop", downloadBtn: "DOWNLOAD EPUB", pdfBtn: "PDF",
+    systemMonitor: "Systeemmonitor", startBtn: "Start Vertaling", resumeBtn: "Hervatten", stopBtn: "Stop", downloadBtn: "DOWNLOAD EPUB", pdfBtn: "PDF",
     tokens: "TOKENS", speed: "SNELHEID", eta: "RESTEREND", processing: "Verwerken", idle: "Gereed",
     title: "Literaire EPUB-vertaler", description: "Professionele Literaire Vertaalmachine", settingsTitle: "INSTELLINGEN",
     restoreSettings: "Herstellen", selectLang: "KIES TAAL", error: "FOUT", apiStatus: "API STATUS",
     freeMode: "GRATIS MODUS", paidMode: "PRO MODUS", connectAiStudio: "VERBIND AI STUDIO", billingInfo: "Betaalde sleutel vereist.",
     lockedModel: "Vergrendeld", checkKey: "Controleren...", verifyBtn: "ACTIVEREN", manualKeyLabel: "HANDMATIGE SLEUTEL",
     manualKeyPlaceholder: "Plak hier je API-key...", aiAnalysis: "AI ANALYSE", preparing: "VOORBEREIDEN",
-    systemLogsReady: "Wachten op logs...", verifyingError: "Sleutelfout!", literal: "Letterlijk", creative: "Creatief"
+    systemLogsReady: "Wachten op logs...", verifyingError: "Sleutelfout!", literal: "Letterlijk", creative: "Creatief",
+    quotaError: "QUOTA OVERSCHREDEN: Wacht ongeveer 60 seconden. Vertaling gepauzeerd."
   },
   pl: {
     historyTitle: "HISTORIA", clearHistory: "Wyczyść wszystko", noHistory: "Brak historii",
     modelLabel: "MODEL", uploadLabel: "PRZEŚLIJ EPUB", uploadPlaceholder: "Przeciągnij lub wybierz plik",
     sourceLang: "JĘZYK ŹRÓDŁOWY", targetLang: "JĘZYK DOCELOWY", creativity: "KREATYWNOŚĆ", htmlTags: "TAGI HTML",
-    systemMonitor: "Monitor systemu", startBtn: "Rozpocznij tłumaczenie", stopBtn: "Zatrzymaj", downloadBtn: "POBIERZ EPUB", pdfBtn: "PDF",
+    systemMonitor: "Monitor systemu", startBtn: "Rozpocznij tłumaczenie", resumeBtn: "Wznów", stopBtn: "Zatrzymaj", downloadBtn: "POBIERZ EPUB", pdfBtn: "PDF",
     tokens: "TOKENY", speed: "PRĘDKOŚĆ", eta: "POZOSTAŁO", processing: "Przetwarzanie", idle: "Gotowy",
     title: "Literacki Tłumacz EPUB", description: "Profesjonalny silnik tłumaczeń literackich", settingsTitle: "USTAWIENIA",
     restoreSettings: "Przywróć", selectLang: "WYBIERZ JĘZYK", error: "BŁĄD", apiStatus: "STATUS API",
     freeMode: "TRYB DARMOWY", paidMode: "TRYB PRO", connectAiStudio: "POŁĄCZ AI STUDIO", billingInfo: "Wymagany płatny klucz.",
     lockedModel: "Zablokowany", checkKey: "Sprawdzanie...", verifyBtn: "AKTYWUJ", manualKeyLabel: "RĘCZNY KLUCZ",
     manualKeyPlaceholder: "Wklej tutaj klucz API...", aiAnalysis: "ANALIZA AI", preparing: "PRZYGOTOWANIE",
-    systemLogsReady: "Oczekiwanie na logi...", verifyingError: "Błąd klucza!", literal: "Dosłowne", creative: "Kreatywne"
+    systemLogsReady: "Oczekiwanie na logi...", verifyingError: "Błąd klucza!", literal: "Dosłowne", creative: "Kreatywne",
+    quotaError: "LIMIT PRZEKROCZONY: Poczekaj ok. 60 sekund. Tłumaczenie wstrzymane."
   },
   hi: {
     historyTitle: "अनुवाद इतिहास", clearHistory: "सब साफ़ करें", noHistory: "कोई इतिहास नहीं",
     modelLabel: "MODEL चयन", uploadLabel: "EPUB अपलोड करें", uploadPlaceholder: "फ़ाइल खींचें या चुनें",
-    sourceLang: "स्रोत भाषा", targetLang: "लक्ष्य भाषा", creativity: "रचनात्मकता", htmlTags: "HTML टैग",
-    systemMonitor: "सिस्टम मॉनिटर", startBtn: "अनुवाद शुरू करें", stopBtn: "रोकें", downloadBtn: "EPUB डाउनलोड करें", pdfBtn: "PDF",
+    sourceLang: "स्रोत भाषा", targetLang: "लक्षय भाषा", creativity: "रचनात्मकता", htmlTags: "HTML टैग",
+    systemMonitor: "सिस्टम मॉनिटर", startBtn: "अनुवाद शुरू करें", resumeBtn: "फिर से शुरू करें", stopBtn: "रोकें", downloadBtn: "EPUB डाउनलोड करें", pdfBtn: "PDF",
     tokens: "टोकन", speed: "गति", eta: "शेष समय", processing: "प्रसंस्करण", idle: "तैयार",
     title: "साहित्यिक EPUB अनुवादक", description: "पेशेवर साहित्यिक अनुवाद इंजन", settingsTitle: "सेटिंग्स और कॉन्फ़िगरेशन",
     restoreSettings: "पुनर्स्थापित करें", selectLang: "भाषा चुनें", error: "त्रुटि", apiStatus: "API स्थिति",
     freeMode: "मुफ्त मोड", paidMode: "प्रो मोड", connectAiStudio: "AI STUDIO से जुड़ें", billingInfo: "सशुल्क कुंजी आवश्यक है।",
     lockedModel: "लॉक किया गया", checkKey: "जांच हो रही है...", verifyBtn: "सत्यापित करें", manualKeyLabel: "मैनुअल कुंजी",
     manualKeyPlaceholder: "अपनी API कुंजी यहाँ पेस्ट करें...", aiAnalysis: "AI विश्लेषण", preparing: "तैयारी हो रही है",
-    systemLogsReady: "लॉग की प्रतीक्षा है...", verifyingError: "कुंजी त्रुटi!", literal: "शाब्दिक", creative: "रचनात्मक"
+    systemLogsReady: "लॉग की प्रतीक्षा है...", verifyingError: "कुंजी त्रुटi!", literal: "शाब्दिक", creative: "रचनात्मक",
+    quotaError: "कोटा समाप्त: कृपया लगभग 60 सेकंड प्रतीक्षा करें। अनुवाद रोक दिया गया है।"
   },
   vi: {
     historyTitle: "LỊCH SỬ DỊCH", clearHistory: "Xóa tất cả", noHistory: "Không có lịch sử",
     modelLabel: "CHỌN MÔ HÌNH", uploadLabel: "TẢI LÊN EPUB", uploadPlaceholder: "Kéo hoặc chọn tệp",
     sourceLang: "NGÔN NGỮ NGUỒN", targetLang: "NGÔN NGỮ ĐÍCH", creativity: "SÁNG TẠO", htmlTags: "THẺ HTML",
-    systemMonitor: "Giám sát hệ thống", startBtn: "Bắt đầu dịch", stopBtn: "Dừng", downloadBtn: "TẢI VỀ EPUB", pdfBtn: "PDF",
+    systemMonitor: "Giám sát hệ thống", startBtn: "Bắt đầu dịch", resumeBtn: "Tiếp tục dịch", stopBtn: "Dừng", downloadBtn: "TẢI VỀ EPUB", pdfBtn: "PDF",
     tokens: "TOKEN", speed: "TỐC ĐỘ", eta: "CÒN LẠI", processing: "Đang xử lý", idle: "Sẵn sàng",
     title: "Trình dịch EPUB Văn học", description: "Công cụ dịch thuật văn học chuyên nghiệp", settingsTitle: "CÀI ĐẶT",
     restoreSettings: "Khôi phục", selectLang: "CHỌN NGÔN NGỮ", error: "LỖI", apiStatus: "TRẠNG THÁI API",
     freeMode: "CHẾ ĐỘ MIỄN PHÍ", paidMode: "CHẾ ĐỘ PRO", connectAiStudio: "KẾT NỐI AI STUDIO", billingInfo: "Yêu cầu khóa trả phí.",
     lockedModel: "Bị khóa", checkKey: "Đang kiểm tra...", verifyBtn: "KÍCH HOẠT", manualKeyLabel: "KHÓA THỦ CÔNG",
     manualKeyPlaceholder: "Dán mã API vào đây...", aiAnalysis: "PHÂN TÍCH AI", preparing: "ĐANG CHUẨN BỊ",
-    systemLogsReady: "Đang chờ nhật ký...", verifyingError: "Lỗi khóa!", literal: "Trực tiếp", creative: "Sáng tạo"
+    systemLogsReady: "Đang chờ nhật ký...", verifyingError: "Lỗi khóa!", literal: "Trực tiếp", creative: "Sáng tạo",
+    quotaError: "HẾT HẠN MỨC: Vui lòng đợi khoảng 60 giây. Quá trình dịch đã tạm dừng."
   }
 };
 
 const STORAGE_KEY_HISTORY = 'lit-trans-history';
+const STORAGE_KEY_RESUME = 'lit-trans-resume-v2';
 
 export default function App() {
   const [uiLang, setUiLang] = useState<UILanguage>('en');
@@ -272,6 +289,7 @@ export default function App() {
   const [showKey, setShowKey] = useState(false);
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(false);
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState(false);
+  const [resumeData, setResumeData] = useState<ResumeInfo | null>(null);
   
   const currentStrings = STRINGS_REGISTRY[uiLang] || STRINGS_REGISTRY['en'];
   const t = { ...STRINGS_REGISTRY['en'], ...currentStrings };
@@ -318,6 +336,12 @@ export default function App() {
     setUiLang(initialLang);
     const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY);
     if (savedHistory) setHistory(JSON.parse(savedHistory));
+    
+    const savedResume = localStorage.getItem(STORAGE_KEY_RESUME);
+    if (savedResume) {
+      try { setResumeData(JSON.parse(savedResume)); } catch {}
+    }
+
     setIsInitializing(false);
   };
 
@@ -350,20 +374,55 @@ export default function App() {
     }
   };
 
-  const startTranslation = async () => {
+  const startTranslation = async (isResuming = false) => {
     if (!file) return;
     setIsProcessing(true);
+    setDownloadUrl(null);
+    setPdfDownloadUrl(null);
     abortControllerRef.current = new AbortController();
+    
     try {
-      const { epubBlob, pdfBlob } = await processEpub(file, { ...settings, uiLang }, (p) => setProgress(p), abortControllerRef.current.signal);
+      const { epubBlob, pdfBlob } = await processEpub(
+        file, 
+        { ...settings, uiLang }, 
+        (p) => {
+          setProgress(p);
+          // Auto-save progress for resume
+          if (p.lastZipPathIndex !== undefined && p.lastNodeIndex !== undefined && p.translatedNodes) {
+             const res: ResumeInfo = {
+                filename: file.name,
+                zipPathIndex: p.lastZipPathIndex,
+                nodeIndex: p.lastNodeIndex,
+                translatedNodes: p.translatedNodes,
+                settings: settings
+             };
+             localStorage.setItem(STORAGE_KEY_RESUME, JSON.stringify(res));
+          }
+        }, 
+        abortControllerRef.current.signal,
+        isResuming ? resumeData || undefined : undefined
+      );
+
       setDownloadUrl(URL.createObjectURL(epubBlob));
       setPdfDownloadUrl(URL.createObjectURL(pdfBlob));
+      
       const newHistoryItem: HistoryItem = { id: Date.now().toString(), filename: file.name, sourceLang: settings.sourceLanguage, targetLang: settings.targetLanguage, modelId: settings.modelId || 'gemini', timestamp: new Date().toLocaleString(), status: 'completed', settingsSnapshot: { ...settings } };
       const updatedHistory = [newHistoryItem, ...history].slice(0, 20);
       setHistory(updatedHistory);
       localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(updatedHistory));
+      
+      // Clear resume on success
+      localStorage.removeItem(STORAGE_KEY_RESUME);
+      setResumeData(null);
+
     } catch (err: any) {
-      if (err.name !== 'AbortError') setError({ title: t.error, message: err.message });
+      if (err.name !== 'AbortError') {
+        if (err.message?.includes('429') || err.message?.includes('quota')) {
+          setError({ title: t.error, message: t.quotaError });
+        } else {
+          setError({ title: t.error, message: err.message });
+        }
+      }
     } finally { setIsProcessing(false); }
   };
 
@@ -552,7 +611,7 @@ export default function App() {
 
       <main className="flex-1 pt-20 flex flex-col items-center">
         {/* Status Bar */}
-        <div className="w-full sticky top-0 z-40 bg-white/60 dark:bg-slate-950/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 py-3.5 flex items-center justify-center">
+        <div className="w-full fixed top-20 z-40 bg-white/60 dark:bg-slate-950/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 py-3.5 flex items-center justify-center">
             <div className="w-full max-w-6xl flex items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2.5">
@@ -574,7 +633,7 @@ export default function App() {
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">{t.uploadLabel}</label>
                   <div className="relative group cursor-pointer">
-                    <input type="file" accept=".epub" onChange={(e) => { const f = e.target.files?.[0]; if(f) setFile(f); }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <input type="file" accept=".epub" onChange={(e) => { const f = e.target.files?.[0]; if(f) { setFile(f); setDownloadUrl(null); setPdfDownloadUrl(null); } }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className={`py-16 border-3 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all duration-500 ${file ? 'bg-indigo-50/20 border-indigo-500 scale-[1.01]' : 'bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'}`}>
                       <Upload size={36} className={file ? 'text-indigo-600' : 'text-slate-300 dark:text-slate-600'} />
                       <span className="text-base font-black text-slate-600 dark:text-slate-600 px-6 text-center leading-tight">{file ? file.name : t.uploadPlaceholder}</span>
@@ -601,7 +660,12 @@ export default function App() {
 
                 <div className="flex flex-col items-center gap-6">
                   {!isProcessing && !downloadUrl && (
-                    <button onClick={startTranslation} disabled={!file} className="w-full py-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[2rem] font-black text-xl shadow-2xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"><Play className="inline mr-3" size={28} fill="currentColor"/> {t.startBtn}</button>
+                    <div className="w-full flex flex-col gap-4">
+                        <button onClick={() => startTranslation(false)} disabled={!file} className="w-full py-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[2rem] font-black text-xl shadow-2xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"><Play className="inline mr-3" size={28} fill="currentColor"/> {t.startBtn}</button>
+                        {resumeData && resumeData.filename === file?.name && (
+                            <button onClick={() => startTranslation(true)} className="w-full py-5 bg-slate-800 hover:bg-slate-900 text-white rounded-[1.5rem] font-black text-sm shadow-xl transition-all flex items-center justify-center gap-3"><StepForward size={20}/> {t.resumeBtn}</button>
+                        )}
+                    </div>
                   )}
                   {isProcessing && (
                     <div className="w-full space-y-8 py-4">
