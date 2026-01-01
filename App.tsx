@@ -75,33 +75,233 @@ const STRINGS_REGISTRY: Record<string, any> = {
     ]
   },
   en: {
-    historyTitle: "TRANSLATION HISTORY", clearHistory: "Clear All", noHistory: "No history",
+    historyTitle: "TRANSLATION HISTORY", clearHistory: "Clear All", noHistory: "No records",
     modelLabel: "MODEL SELECTION", uploadLabel: "UPLOAD EPUB", uploadPlaceholder: "Drag or select file",
     sourceLang: "SOURCE LANG", targetLang: "TARGET LANG", creativity: "CREATIVITY", htmlTags: "HTML TAGS",
     systemMonitor: "System Monitor", startBtn: "Start Translation", resumeBtn: "Resume", stopBtn: "Stop", downloadBtn: "DOWNLOAD EPUB",
-    tokens: "TOKENS", speed: "SPEED", eta: "ETA", processing: "Processing", idle: "Idle",
-    title: "Literary EPUB Translator", description: "Professional Literary Translation Engine", settingsTitle: "SETTINGS & CONFIG",
+    tokens: "TOKENS", speed: "SPEED", eta: "REMAINING", processing: "Processing", idle: "Ready",
+    title: "Literary EPUB Translator", description: "Professional Literary Translation Engine", settingsTitle: "SETTINGS & CONFIGURATION",
     restoreSettings: "Restore", selectLang: "SELECT LANGUAGE", error: "ERROR", apiStatus: "API STATUS",
-    freeMode: "FREE MODE", paidMode: "PRO MOD", connectAiStudio: "CONNECT AI STUDIO", billingInfo: "Paid Key required for PRO models.",
-    lockedModel: "Locked", checkKey: "Checking...", verifyBtn: "VERIFY", manualKeyLabel: "MANUAL KEY",
-    manualKeyPlaceholder: "Paste your API key...", aiAnalysis: "AI ANALYSIS", preparing: "AWAITING PREP",
-    systemLogsReady: "Waiting for logs...", verifyingError: "Key error!", literal: "Literal", creative: "Creative",
-    quotaError: "QUOTA EXCEEDED: Please wait about 60 seconds. Translation paused, you can resume later.",
+    freeMode: "FREE MODE", paidMode: "PRO MODE", connectAiStudio: "CONNECT AI STUDIO", billingInfo: "Paid Key is required for advanced models.",
+    lockedModel: "Connection Required", checkKey: "Verifying...", verifyBtn: "ACTIVATE", manualKeyLabel: "MANUAL KEY",
+    manualKeyPlaceholder: "Paste your API Key here...", aiAnalysis: "AI ANALYSIS", preparing: "AWAITING PREPARATION",
+    systemLogsReady: "Waiting for System Logs...", verifyingError: "Verification error!", literal: "Faithful", creative: "Creative",
+    quotaError: "QUOTA EXCEEDED: Please wait about 60 seconds.",
     interfaceSettings: "INTERFACE SETTINGS", themeMode: "THEME MODE", appLanguage: "APP LANGUAGE",
     copyright: "2024 AI Literary EPUB Translator. All rights reserved.", learnMore: "INFO",
     aiOptimized: "AI OPTIMIZED",
-    legalWarningTitle: "LEGAL DISCLAIMER & TERMS OF SERVICE",
-    legalWarningText: "This software ('Tool') is an experimental utility designed to assist users in localizing EPUB content via AI. By utilizing this Tool, you explicitly acknowledge and agree to the following terms:",
+    legalWarningTitle: "LEGAL DISCLAIMER & TERMS OF USE",
+    legalWarningText: "This software ('Tool') is an experimental utility. By using it, you agree to:",
     legalPoints: [
-      "Intellectual Property: Users are solely responsible for ensuring that all processed content complies with relevant copyright laws and international treaties.",
-      "Non-Commercial Use: This tool is strictly for personal, non-commercial, and educational purposes.",
-      "Limitation of Liability: The developers shall not be held liable for any data loss, copyright infringement, or direct/indirect damages resulting from the use of this Tool.",
-      "Acceptance of Terms: Use of this service constitutes full consent to these terms and the acceptance of all associated legal consequences."
+      "IP: User is responsible for copyright compliance.",
+      "Personal Use: Hobby or education only.",
+      "Liability: Developers are not responsible for damages.",
+      "Binding: Usage constitutes full consent."
     ]
+  },
+  it: {
+    historyTitle: "CRONOLOGIA TRADUZIONI", clearHistory: "Cancella Tutto", noHistory: "Nessun record",
+    modelLabel: "SELEZIONE MODELLO", uploadLabel: "CARICA EPUB", uploadPlaceholder: "Trascina o seleziona file",
+    sourceLang: "LINGUA ORIGINE", targetLang: "LINGUA DESTINAZIONE", creativity: "CREATIVITÀ", htmlTags: "TAG HTML",
+    systemMonitor: "Monitor di Sistema", startBtn: "Avvia Traduzione", resumeBtn: "Riprendi", stopBtn: "Ferma", downloadBtn: "SCARICA EPUB",
+    tokens: "TOKEN", speed: "VELOCITÀ", eta: "RIMANENTE", processing: "In corso", idle: "Pronto",
+    title: "Traduttore EPUB Letterario", description: "Motore di Traduzione Letteraria Professionale", settingsTitle: "IMPOSTAZIONI & CONFIGURAZIONE",
+    restoreSettings: "Ripristina", selectLang: "SELEZIONA LINGUA", error: "ERRORE", apiStatus: "STATO API",
+    freeMode: "MODALITÀ GRATUITA", paidMode: "MODALITÀ PRO", connectAiStudio: "CONNETTI AI STUDIO", billingInfo: "Chiave a pagamento richiesta per modelli PRO.",
+    lockedModel: "Connessione Richiesta", checkKey: "Verifica...", verifyBtn: "ATTIVA", manualKeyLabel: "CHIAVE MANUALE",
+    manualKeyPlaceholder: "Incolla la tua chiave API...", aiAnalysis: "ANALISI IA", preparing: "IN ATTESA",
+    systemLogsReady: "In attesa dei log...", verifyingError: "Errore di verifica!", literal: "Fedele", creative: "Creativo",
+    quotaError: "QUOTA SUPERATA: Attendere 60 secondi.",
+    interfaceSettings: "IMPOSTAZIONI INTERFACCIA", themeMode: "MODALITÀ TEMA", appLanguage: "LINGUA APP",
+    copyright: "2024 AI Literary EPUB Translator. Tutti i diritti riservati.", learnMore: "INFO",
+    aiOptimized: "OTTIMIZZATO IA",
+    legalWarningTitle: "ESCLUSIONE DI RESPONSABILITÀ LEGALE",
+    legalWarningText: "Questo software è un'utilità sperimentale. Usandolo, accetti:",
+    legalPoints: ["IP: L'utente è responsabile del copyright.", "Uso Personale: Solo hobby o educazione.", "Responsabilità: Sviluppatori non responsabili per danni.", "Vincolo: L'uso costituisce consenso."]
+  },
+  ru: {
+    historyTitle: "ИСТОРИЯ ПЕРЕВОДОВ", clearHistory: "Очистить все", noHistory: "Нет записей",
+    modelLabel: "ВЫБОР МОДЕЛИ", uploadLabel: "ЗАГРУЗИТЬ EPUB", uploadPlaceholder: "Перетащите или выберите файл",
+    sourceLang: "ИСХОДНЫЙ ЯЗЫК", targetLang: "ЯЗЫК ПЕРЕВОДА", creativity: "КРЕАТИВНОСТЬ", htmlTags: "HTML ТЕГИ",
+    systemMonitor: "Системный монитор", startBtn: "Начать перевод", resumeBtn: "Продолжить", stopBtn: "Стоп", downloadBtn: "СКАЧАТЬ EPUB",
+    tokens: "ТОКЕНЫ", speed: "СКОРОСТЬ", eta: "ОСТАЛОСЬ", processing: "Обработка", idle: "Готов",
+    title: "Литературный EPUB переводчик", description: "Профессиональный движок литературного перевода", settingsTitle: "НАСТРОЙКИ И КОНФИГУРАЦИЯ",
+    restoreSettings: "Восстановить", selectLang: "ВЫБРАТЬ ЯЗЫК", error: "ОШИБКА", apiStatus: "СТАТУС API",
+    freeMode: "БЕСПЛАТНЫЙ РЕЖИМ", paidMode: "PRO РЕЖИМ", connectAiStudio: "ПОДКЛЮЧИТЬ AI STUDIO", billingInfo: "Для PRO моделей нужен платный ключ.",
+    lockedModel: "Требуется подключение", checkKey: "Проверка...", verifyBtn: "АКТИВИРОВАТЬ", manualKeyLabel: "РУЧНОЙ КЛЮЧ",
+    manualKeyPlaceholder: "Вставьте ваш API ключ...", aiAnalysis: "ИИ АНАЛИЗ", preparing: "ПОДГОТОВКА",
+    systemLogsReady: "Ожидание логов...", verifyingError: "Ошибка проверки!", literal: "Буквальный", creative: "Творческий",
+    quotaError: "КВОТА ПРЕВЫШЕНА: Подождите 60 секунд.",
+    interfaceSettings: "НАСТРОЙКИ ИНТЕРФЕЙСА", themeMode: "ТЕМНЫЙ РЕЖИМ", appLanguage: "ЯЗЫК ПРИЛОЖЕНИЯ",
+    copyright: "2024 AI Literary EPUB Translator. Все права защищены.", learnMore: "ИНФО",
+    aiOptimized: "ОПТИМИЗИРОВАНО ИИ",
+    legalWarningTitle: "ЮРИДИЧЕСКИЙ ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ",
+    legalWarningText: "Это экспериментальное ПО. Используя его, вы соглашаетесь с тем, что:",
+    legalPoints: ["ИС: Пользователь отвечает за соблюдение авторских прав.", "Личное использование: Только для хобби или обучения.", "Ответственность: Разработчики не несут ответственности за ущерб.", "Согласие: Использование означает полное согласие."]
+  },
+  zh: {
+    historyTitle: "翻译历史", clearHistory: "清除全部", noHistory: "无记录",
+    modelLabel: "模型选择", uploadLabel: "上传 EPUB", uploadPlaceholder: "拖拽或选择文件",
+    sourceLang: "源语言", targetLang: "目标语言", creativity: "创造力", htmlTags: "HTML 标签",
+    systemMonitor: "系统监控", startBtn: "开始翻译", resumeBtn: "继续", stopBtn: "停止", downloadBtn: "下载 EPUB",
+    tokens: "代币", speed: "速度", eta: "剩余时间", processing: "处理中", idle: "就绪",
+    title: "文学 EPUB 翻译器", description: "专业文学翻译引擎", settingsTitle: "设置与配置",
+    restoreSettings: "还原", selectLang: "选择语言", error: "错误", apiStatus: "API 状态",
+    freeMode: "免费模式", paidMode: "专业模式", connectAiStudio: "连接 AI STUDIO", billingInfo: "专业模型需要付费密钥。",
+    lockedModel: "需要连接", checkKey: "验证中...", verifyBtn: "激活", manualKeyLabel: "手动密钥",
+    manualKeyPlaceholder: "在此粘贴您的 API 密钥...", aiAnalysis: "AI 分析", preparing: "准备中",
+    systemLogsReady: "等待系统日志...", verifyingError: "验证错误！", literal: "直译", creative: "意译",
+    quotaError: "配额超出：请等待 60 秒。",
+    interfaceSettings: "界面设置", themeMode: "主题模式", appLanguage: "应用语言",
+    copyright: "2024 AI Literary EPUB Translator. 保留所有权利。", learnMore: "详情",
+    aiOptimized: "AI 已优化",
+    legalWarningTitle: "法律声明与使用条款",
+    legalWarningText: "本软件为实验性工具。使用即表示您同意：",
+    legalPoints: ["知识产权：用户负责版权合规性。", "个人使用：仅限个人爱好或教育。", "责任限制：开发者不对损害负责。", "法律效力：使用即视为完全同意。"]
+  },
+  ko: {
+    historyTitle: "번역 기록", clearHistory: "전체 삭제", noHistory: "기록 없음",
+    modelLabel: "모델 선택", uploadLabel: "EPUB 업로드", uploadPlaceholder: "파일을 끌어오거나 선택",
+    sourceLang: "출발어", targetLang: "도착어", creativity: "창의성", htmlTags: "HTML 태그",
+    systemMonitor: "시스템 모니터", startBtn: "번역 시작", resumeBtn: "재개", stopBtn: "중지", downloadBtn: "EPUB 다운로드",
+    tokens: "토큰", speed: "속도", eta: "남은 시간", processing: "처리 중", idle: "준비 완료",
+    title: "문학 EPUB 번역기", description: "전문 문학 번역 엔진", settingsTitle: "설정 및 구성",
+    restoreSettings: "복구", selectLang: "언어 선택", error: "오류", apiStatus: "API 상태",
+    freeMode: "무료 모드", paidMode: "프로 모드", connectAiStudio: "AI STUDIO 연결", billingInfo: "프로 모델은 유료 키가 필요합니다.",
+    lockedModel: "연결 필요", checkKey: "확인 중...", verifyBtn: "활성화", manualKeyLabel: "수동 키",
+    manualKeyPlaceholder: "API 키를 입력하세요...", aiAnalysis: "AI 분석", preparing: "준비 대기 중",
+    systemLogsReady: "시스템 로그 대기 중...", verifyingError: "인증 오류!", literal: "직역", creative: "의역",
+    quotaError: "할당량 초과: 60초간 대기하세요.",
+    interfaceSettings: "인터페이스 설정", themeMode: "테마 모드", appLanguage: "앱 언어",
+    copyright: "2024 AI Literary EPUB Translator. 모든 권리 보유.", learnMore: "정보",
+    aiOptimized: "AI 최적화 완료",
+    legalWarningTitle: "법적 고지 및 이용 약관",
+    legalWarningText: "이 소프트웨어는 실험용 도구입니다. 사용 시 다음 사항에 동의하게 됩니다:",
+    legalPoints: ["IP: 사용자는 저작권 준수 책임이 있습니다.", "개인 용도: 취미 또는 교육용 전용.", "책임 제한: 개발자는 손해에 책임을 지지 않습니다.", "구속력: 사용은 전체 동의를 의미합니다."]
+  },
+  ar: {
+    historyTitle: "سجل الترجمة", clearHistory: "مسح الكل", noHistory: "لا يوجد سجل",
+    modelLabel: "اختيار النموذج", uploadLabel: "رفع EPUB", uploadPlaceholder: "اسحب أو اختر ملفاً",
+    sourceLang: "اللغة الأصل", targetLang: "اللغة الهدف", creativity: "الإبداع", htmlTags: "علامات HTML",
+    systemMonitor: "مراقب النظام", startBtn: "بدء الترجمة", resumeBtn: "استئناف", stopBtn: "إيقاف", downloadBtn: "تحميل EPUB",
+    tokens: "الرموز", speed: "السرعة", eta: "المتبقي", processing: "جاري المعالجة", idle: "جاهز",
+    title: "مترجم EPUB الأدبي", description: "محرك ترجمة أدبي احترافي", settingsTitle: "الإعدادات والتكوين",
+    restoreSettings: "استعادة", selectLang: "اختر اللغة", error: "خطأ", apiStatus: "حالة API",
+    freeMode: "الوضع المجاني", paidMode: "الوضع الاحترافي", connectAiStudio: "اتصال AI STUDIO", billingInfo: "مفتاح مدفوع مطلوب للنماذج المتقدمة.",
+    lockedModel: "الاتصال مطلوب", checkKey: "جاري التحقق...", verifyBtn: "تفعيل", manualKeyLabel: "مفتاح يدوي",
+    manualKeyPlaceholder: "ألصق مفتاح API هنا...", aiAnalysis: "تحليل الذكاء الاصطناعي", preparing: "في انتظار التحضير",
+    systemLogsReady: "في انتظار سجلات النظام...", verifyingError: "خطأ في التحقق!", literal: "حرفي", creative: "إبداعي",
+    quotaError: "تجاوز الحصة: يرجى الانتظار 60 ثانية.",
+    interfaceSettings: "إعدادات الواجهة", themeMode: "وضع المظهر", appLanguage: "لغة التطبيق",
+    copyright: "2024 AI Literary EPUB Translator. جميع الحقوق محفوظة.", learnMore: "معلومات",
+    aiOptimized: "محسن بالذكاء الاصطناعي",
+    legalWarningTitle: "إخلاء المسؤولية القانونية وشروط الاستخدام",
+    legalWarningText: "هذا البرنامج أداة تجريبية. باستخدامه، فإنك توافق على:",
+    legalPoints: ["الملكية: المستخدم مسؤول عن حقوق النشر.", "الاستخدام الشخصي: للهواية والتعليم فقط.", "المسؤولية: المطورون غير مسؤولين عن الأضرار.", "الإلزام: الاستخدام يعني الموافقة الكاملة."]
+  },
+  pt: {
+    historyTitle: "HISTÓRICO DE TRADUÇÃO", clearHistory: "Limpar Tudo", noHistory: "Sem registros",
+    modelLabel: "SELEÇÃO DE MODELO", uploadLabel: "CARREGAR EPUB", uploadPlaceholder: "Arraste ou selecione o arquivo",
+    sourceLang: "IDIOMA ORIGEM", targetLang: "IDIOMA DESTINO", creativity: "CRIATIVIDADE", htmlTags: "TAGS HTML",
+    systemMonitor: "Monitor do Sistema", startBtn: "Iniciar Tradução", resumeBtn: "Retomar", stopBtn: "Parar", downloadBtn: "BAIXAR EPUB",
+    tokens: "TOKENS", speed: "VELOCIDADE", eta: "RESTANTE", processing: "Processando", idle: "Pronto",
+    title: "Tradutor Literário de EPUB", description: "Motor de Tradução Literária Profissional", settingsTitle: "AJUSTES & CONFIGURAÇÃO",
+    restoreSettings: "Restaurar", selectLang: "SELECIONAR IDIOMA", error: "ERRO", apiStatus: "STATUS DA API",
+    freeMode: "MODO GRATUITO", paidMode: "MODO PRO", connectAiStudio: "CONECTAR AI STUDIO", billingInfo: "Chave paga necessária para modelos PRO.",
+    lockedModel: "Conexão Necessária", checkKey: "Verificando...", verifyBtn: "ATIVAR", manualKeyLabel: "CHAVE MANUAL",
+    manualKeyPlaceholder: "Cole sua chave API aqui...", aiAnalysis: "ANÁLISE IA", preparing: "AGUARDANDO",
+    systemLogsReady: "Aguardando logs...", verifyingError: "Erro de verificação!", literal: "Fiel", creative: "Criativo",
+    quotaError: "COTA EXCEDIDA: Aguarde 60 segundos.",
+    interfaceSettings: "AJUSTES DE INTERFACE", themeMode: "MODO DE TEMA", appLanguage: "IDIOMA DO APP",
+    copyright: "2024 AI Literary EPUB Translator. Todos os direitos reservados.", learnMore: "INFO",
+    aiOptimized: "IA OTIMIZADA",
+    legalWarningTitle: "AVISO LEGAL E TERMOS DE USO",
+    legalWarningText: "Este software é uma utilidade experimental. Ao usá-lo, você concorda que:",
+    legalPoints: ["PI: O usuário é responsável pelos direitos autorais.", "Uso Pessoal: Apenas hobby ou educação.", "Responsabilidade: Desenvolvedores não respondem por danos.", "Vínculo: O uso constitui consentimento total."]
+  },
+  nl: {
+    historyTitle: "VERTALING GESCHIEDENIS", clearHistory: "Alles Wissen", noHistory: "Geen records",
+    modelLabel: "MODEL SELECTIE", uploadLabel: "EPUB UPLOADEN", uploadPlaceholder: "Sleep of selecteer bestand",
+    sourceLang: "BRONTAAL", targetLang: "DOELTAAL", creativity: "CREATIVITEIT", htmlTags: "HTML TAGS",
+    systemMonitor: "Systeemmonitor", startBtn: "Start Vertaling", resumeBtn: "Hervatten", stopBtn: "Stop", downloadBtn: "EPUB DOWNLOADEN",
+    tokens: "TOKENS", speed: "SNELHEID", eta: "RESTEREND", processing: "Verwerken", idle: "Gereed",
+    title: "Literaire EPUB Vertaler", description: "Professionele Literaire Vertaalmachine", settingsTitle: "INSTELLINGEN & CONFIGURATIE",
+    restoreSettings: "Herstellen", selectLang: "SELECTEER TAAL", error: "FOUT", apiStatus: "API STATUS",
+    freeMode: "GRATIS MODUS", paidMode: "PRO MODUS", connectAiStudio: "VERBIND AI STUDIO", billingInfo: "Betaalde sleutel vereist voor PRO modellen.",
+    lockedModel: "Verbinding Vereist", checkKey: "Verifiëren...", verifyBtn: "ACTIVEREN", manualKeyLabel: "HANDMATIGE SLEUTEL",
+    manualKeyPlaceholder: "Plak hier je API-sleutel...", aiAnalysis: "AI ANALYSE", preparing: "VOORBEREIDEN",
+    systemLogsReady: "Wachten op systeemlogs...", verifyingError: "Verificatiefout!", literal: "Letterlijk", creative: "Creatief",
+    quotaError: "QUOTA OVERSCHREDEN: Wacht 60 seconden.",
+    interfaceSettings: "INTERFACE INSTELLINGEN", themeMode: "THEMA MODUS", appLanguage: "APP TAAL",
+    copyright: "2024 AI Literary EPUB Translator. Alle rechten voorbehouden.", learnMore: "INFO",
+    aiOptimized: "AI GEOPTIMALISEERD",
+    legalWarningTitle: "JURIDISCHE DISCLAIMER & GEBRUIKSVOORWAARDEN",
+    legalWarningText: "Deze software is experimenteel. Door gebruik stemt u in met:",
+    legalPoints: ["IE: Gebruiker is verantwoordelijk voor auteursrecht.", "Persoonlijk gebruik: Alleen hobby of educatie.", "Aansprakelijkheid: Ontwikkelaars niet aansprakelijk voor schade.", "Binding: Gebruik vormt volledige instemming."]
+  },
+  pl: {
+    historyTitle: "HISTORIA TŁUMACZEŃ", clearHistory: "Wyczyść wszystko", noHistory: "Brak wpisów",
+    modelLabel: "WYBÓR MODELU", uploadLabel: "PRZEŚLIJ EPUB", uploadPlaceholder: "Przeciągnij lub wybierz plik",
+    sourceLang: "JĘZYK ŹRÓDŁOWY", targetLang: "JĘZYK DOCELOWY", creativity: "KREATYWNOŚĆ", htmlTags: "TAGI HTML",
+    systemMonitor: "Monitor systemu", startBtn: "Rozpocznij tłumaczenie", resumeBtn: "Wznów", stopBtn: "Zatrzymaj", downloadBtn: "POBIERZ EPUB",
+    tokens: "TOKENY", speed: "PRĘDKOŚĆ", eta: "POZOSTAŁO", processing: "Przetwarzanie", idle: "Gotowe",
+    title: "Literacki Tłumacz EPUB", description: "Profesjonalny Silnik Tłumaczeń Literackich", settingsTitle: "USTAWIENIA I KONFIGURACJA",
+    restoreSettings: "Przywróć", selectLang: "WYBIERZ JĘZYK", error: "BŁĄD", apiStatus: "STATUS API",
+    freeMode: "TRYB BEZPŁATNY", paidMode: "TRYB PRO", connectAiStudio: "POŁĄCZ Z AI STUDIO", billingInfo: "Płatny klucz wymagany dla modeli PRO.",
+    lockedModel: "Wymagane połączenie", checkKey: "Weryfikacja...", verifyBtn: "AKTYWUJ", manualKeyLabel: "KLUCZ RĘCZNY",
+    manualKeyPlaceholder: "Wklej tutaj klucz API...", aiAnalysis: "ANALIZA AI", preparing: "PRZYGOTOWANIE",
+    systemLogsReady: "Oczekiwanie na logi...", verifyingError: "Błąd weryfikacji!", literal: "Dosłowne", creative: "Kreatywne",
+    quotaError: "LIMIT PRZEKROCZONY: Odczekaj 60 sekund.",
+    interfaceSettings: "USTAWIENIA INTERFEJSU", themeMode: "TRYB MOTYWU", appLanguage: "JĘZYK APLIKACJI",
+    copyright: "2024 AI Literary EPUB Translator. Wszelkie prawa zastrzeżone.", learnMore: "INFO",
+    aiOptimized: "ZOPTYMALIZOWANE PRZEZ AI",
+    legalWarningTitle: "ZASTRZEŻENIA PRAWNE I WARUNKI UŻYTKOWANIA",
+    legalWarningText: "To oprogramowanie jest eksperymentalne. Korzystając z niego, zgadzasz się na:",
+    legalPoints: ["IP: Użytkownik odpowiada za prawa autorskie.", "Użytek osobisty: Tylko hobby lub nauka.", "Odpowiedzialność: Deweloperzy nie odpowiadają za szkody.", "Wiążące: Użycie oznacza pełną zgodę."]
+  },
+  hi: {
+    historyTitle: "अनुवाद इतिहास", clearHistory: "सभी साफ़ करें", noHistory: "कोई रिकॉर्ड नहीं",
+    modelLabel: "मॉडल चयन", uploadLabel: "EPUB अपलोड करें", uploadPlaceholder: "फ़ाइल खींचें या चुनें",
+    sourceLang: "स्रोत भाषा", targetLang: "लक्ष्य भाषा", creativity: "रचनात्मकता", htmlTags: "HTML टैग",
+    systemMonitor: "सिस्टम मॉनिटर", startBtn: "अनुवाद शुरू करें", resumeBtn: "फिर से शुरू करें", stopBtn: "रोकें", downloadBtn: "EPUB डाउनलोड करें",
+    tokens: "टोकन", speed: "गति", eta: "शेष समय", processing: "प्रसंस्करण", idle: "तैयार",
+    title: "साहित्यिक EPUB अनुवादक", description: "पेशेवर साहित्यिक अनुवाद इंजन", settingsTitle: "सेटिंग्स और कॉन्फ़िगरेशन",
+    restoreSettings: "पुनर्स्थापित करें", selectLang: "भाषा चुनें", error: "त्रुटि", apiStatus: "API स्थिति",
+    freeMode: "मुफ़्त मोड", paidMode: "प्रो मोड", connectAiStudio: "AI STUDIO कनेक्ट करें", billingInfo: "प्रो मॉडल के लिए भुगतान कुंजी आवश्यक है।",
+    lockedModel: "कनेक्शन आवश्यक", checkKey: "सत्यापित किया जा रहा है...", verifyBtn: "सक्रिय करें", manualKeyLabel: "मैनुअल कुंजी",
+    manualKeyPlaceholder: "अपनी API कुंजी यहाँ पेस्ट करें...", aiAnalysis: "AI विश्लेषण", preparing: "तैयारी की प्रतीक्षा",
+    systemLogsReady: "सिस्टम लॉग की प्रतीक्षा है...", verifyingError: "सत्यापन त्रुटि!", literal: "शाब्दिक", creative: "रचनात्मक",
+    quotaError: "कोटा समाप्त: कृपया 60 सेकंड प्रतीक्षा करें।",
+    interfaceSettings: "इंटरफ़ेस सेटिंग्स", themeMode: "थीम मोड", appLanguage: "ऐप भाषा",
+    copyright: "2024 AI Literary EPUB Translator. सर्वाधिकार सुरक्षित।", learnMore: "जानकारी",
+    aiOptimized: "AI अनुकूलित",
+    legalWarningTitle: "कानूनी अस्वीकरण और उपयोग की शर्तें",
+    legalWarningText: "यह सॉफ्टवेयर एक प्रयोगात्मक उपयोगिता है। इसके उपयोग से, आप सहमत हैं:",
+    legalPoints: ["बौद्धिक संपदा: कॉपीराइट अनुपालन के लिए उपयोगकर्ता जिम्मेदार है।", "व्यक्तिगत उपयोग: केवल शौक या शिक्षा के लिए।", "दायित्व: डेवलपर्स नुकसान के लिए जिम्मेदार नहीं हैं।", "बाध्यकारी: उपयोग का अर्थ पूर्ण सहमति है।"]
+  },
+  vi: {
+    historyTitle: "LỊCH SỬ DỊCH", clearHistory: "Xóa tất cả", noHistory: "Không có bản ghi",
+    modelLabel: "CHỌN MÔ HÌNH", uploadLabel: "TẢI EPUB LÊN", uploadPlaceholder: "Kéo hoặc chọn tệp",
+    sourceLang: "NGÔN NGỮ NGUỒN", targetLang: "NGÔN NGỮ ĐÍCH", creativity: "SÁNG TẠO", htmlTags: "THẺ HTML",
+    systemMonitor: "Giám sát hệ thống", startBtn: "Bắt đầu dịch", resumeBtn: "Tiếp tục", stopBtn: "Dừng", downloadBtn: "TẢI EPUB VỀ",
+    tokens: "TOKEN", speed: "TỐC ĐỘ", eta: "CÒN LẠI", processing: "Đang xử lý", idle: "Sẵn sàng",
+    title: "Trình dịch EPUB văn học", description: "Động cơ dịch thuật văn học chuyên nghiệp", settingsTitle: "CÀI ĐẶT & CẤU HÌNH",
+    restoreSettings: "Khôi phục", selectLang: "CHỌN NGÔN NGỮ", error: "LỖI", apiStatus: "TRẠNG THÁI API",
+    freeMode: "CHẾ ĐỘ MIỄN PHÍ", paidMode: "CHẾ ĐỘ PRO", connectAiStudio: "KẾT NỐI AI STUDIO", billingInfo: "Cần khóa trả phí cho mô hình PRO.",
+    lockedModel: "Yêu cầu kết nối", checkKey: "Đang xác minh...", verifyBtn: "KÍCH HOẠT", manualKeyLabel: "KHÓA THỦ CÔNG",
+    manualKeyPlaceholder: "Dán khóa API của bạn vào đây...", aiAnalysis: "PHÂN TÍCH AI", preparing: "ĐANG CHUẨN BỊ",
+    systemLogsReady: "Đang chờ nhật ký hệ thống...", verifyingError: "Lỗi xác minh!", literal: "Sát nghĩa", creative: "Sáng tạo",
+    quotaError: "HẾT HẠN MỨC: Vui lòng chờ 60 giây.",
+    interfaceSettings: "CÀI ĐẶT GIAO DIỆN", themeMode: "CHẾ ĐỘ CHỦ ĐỀ", appLanguage: "NGÔN NGỮ ỨNG DỤNG",
+    copyright: "2024 AI Literary EPUB Translator. Bảo lưu mọi quyền.", learnMore: "THÔNG TIN",
+    aiOptimized: "ĐÃ TỐI ƯU AI",
+    legalWarningTitle: "TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM PHÁP LÝ",
+    legalWarningText: "Phần mềm này là một tiện ích thử nghiệm. Bằng cách sử dụng, bạn đồng ý:",
+    legalPoints: ["SHTT: Người dùng chịu trách nhiệm về bản quyền.", "Sử dụng cá nhân: Chỉ cho sở thích hoặc giáo dục.", "Trách nhiệm: Nhà phát triển không chịu trách nhiệm về thiệt hại.", "Ràng buộc: Việc sử dụng cấu thành sự đồng ý hoàn toàn."]
   }
 };
 
-// Diğer dilleri İngilizce ile doldur
+// Fill missing languages with English as fallback
 LANGUAGES_DATA.forEach(lang => {
   if (!STRINGS_REGISTRY[lang.code]) {
     STRINGS_REGISTRY[lang.code] = { ...STRINGS_REGISTRY['en'] };
@@ -111,15 +311,12 @@ LANGUAGES_DATA.forEach(lang => {
 const STORAGE_KEY_HISTORY = 'lit-trans-history';
 const STORAGE_KEY_RESUME = 'lit-trans-resume-v2';
 
-// Kalan süreyi formatlayan yardımcı fonksiyon
 function formatDuration(seconds?: number): string {
   if (seconds === undefined || seconds < 0) return '--';
   if (seconds === 0) return '0s';
-  
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-
   if (h > 0) return `${h}h ${m}m ${s}s`;
   if (m > 0) return `${m}m ${s}s`;
   return `${s}s`;
@@ -184,12 +381,10 @@ export default function App() {
     setUiLang(initialLang);
     const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY);
     if (savedHistory) setHistory(JSON.parse(savedHistory));
-    
     const savedResume = localStorage.getItem(STORAGE_KEY_RESUME);
     if (savedResume) {
       try { setResumeData(JSON.parse(savedResume)); } catch {}
     }
-
     setIsInitializing(false);
   };
 
@@ -228,7 +423,6 @@ export default function App() {
     setDownloadUrl(null);
     setIsCreativityOptimized(false);
     abortControllerRef.current = new AbortController();
-    
     try {
       const { epubBlob } = await processEpub(
         file, 
@@ -240,37 +434,23 @@ export default function App() {
                setSettings(s => ({ ...s, temperature: recommendedTemp }));
                setIsCreativityOptimized(true);
             }
-            return {
-              ...p,
-              logs: p.logs.length > 0 ? p.logs : prev.logs
-            };
+            return { ...p, logs: p.logs.length > 0 ? p.logs : prev.logs };
           });
-          
           if (p.lastZipPathIndex !== undefined && p.lastNodeIndex !== undefined && p.translatedNodes) {
-             const res: ResumeInfo = {
-                filename: file.name,
-                zipPathIndex: p.lastZipPathIndex,
-                nodeIndex: p.lastNodeIndex,
-                translatedNodes: p.translatedNodes,
-                settings: settings
-             };
+             const res: ResumeInfo = { filename: file.name, zipPathIndex: p.lastZipPathIndex, nodeIndex: p.lastNodeIndex, translatedNodes: p.translatedNodes, settings: settings };
              localStorage.setItem(STORAGE_KEY_RESUME, JSON.stringify(res));
           }
         }, 
         abortControllerRef.current.signal,
         isResuming ? resumeData || undefined : undefined
       );
-
       setDownloadUrl(URL.createObjectURL(epubBlob));
-      
       const newHistoryItem: HistoryItem = { id: Date.now().toString(), filename: file.name, sourceLang: settings.sourceLanguage, targetLang: settings.targetLanguage, modelId: settings.modelId || 'gemini', timestamp: new Date().toLocaleString(), status: 'completed', settingsSnapshot: { ...settings } };
       const updatedHistory = [newHistoryItem, ...history].slice(0, 20);
       setHistory(updatedHistory);
       localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(updatedHistory));
-      
       localStorage.removeItem(STORAGE_KEY_RESUME);
       setResumeData(null);
-
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         if (err.message?.includes('429') || err.message?.includes('quota')) {
@@ -335,7 +515,6 @@ export default function App() {
             <button onClick={() => setIsRightDrawerOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><X size={18}/></button>
           </div>
           <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-            
             <div className="space-y-4">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><LayoutDashboard size={12}/> {t.interfaceSettings}</label>
               <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-3xl border border-slate-100 dark:border-slate-700/50 space-y-5">
@@ -381,10 +560,6 @@ export default function App() {
                     {isVerifying ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />} {isVerifying ? t.checkKey : t.verifyBtn}
                   </button>
                 </div>
-                <div className="mt-4 text-[9px] font-bold text-slate-400 dark:text-slate-500 text-center leading-relaxed px-4 flex flex-col items-center gap-1.5">
-                  <span>{t.billingInfo}</span>
-                  <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-black uppercase text-[8px]">{t.learnMore} <ExternalLink size={10} /></a>
-                </div>
               </div>
             </div>
 
@@ -399,43 +574,9 @@ export default function App() {
                   <button key={m.id} disabled={m.locked} onClick={() => setSettings({...settings, modelId: m.id})} className={`p-4 rounded-2xl border-2 text-left transition-all relative overflow-hidden ${settings.modelId === m.id ? 'border-indigo-500 bg-indigo-50/20 dark:bg-indigo-900/10' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
                     {m.locked && <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/70 flex items-center justify-center backdrop-blur-[1px]"><Lock size={12} className="text-slate-400 dark:text-slate-500" /></div>}
                     <div className="flex justify-between items-center"><span className={`text-[10px] font-black ${settings.modelId === m.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-300'}`}>{m.name}</span>{settings.modelId === m.id && <Check size={12} className="text-indigo-500" />}</div>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase mt-0.5">{m.desc}</p>
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Tags size={12}/> {t.htmlTags}</label>
-              <div className="flex flex-wrap gap-2">
-                {AVAILABLE_TAGS.map(tag => (
-                  <button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${settings.targetTags.includes(tag) ? 'border-indigo-500 bg-indigo-500 text-white shadow-md' : 'border-slate-100 dark:border-slate-800 text-slate-400 hover:border-slate-200'}`}>{tag}</button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4 bg-slate-50 dark:bg-slate-800/40 p-5 rounded-3xl border border-slate-100 dark:border-slate-700/50">
-                <div className="flex justify-between items-center">
-                   <div className="flex items-center gap-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.creativity}</label>
-                      {isCreativityOptimized && (
-                         <div className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded-md animate-pulse border border-amber-200 dark:border-amber-800/30">
-                            <Wand2 size={8} className="text-amber-600 dark:text-amber-400" />
-                            <span className="text-[7px] font-black text-amber-600 dark:text-amber-400 uppercase">{t.aiOptimized}</span>
-                         </div>
-                      )}
-                   </div>
-                   <span className="text-[10px] font-black text-indigo-600">{settings.temperature}</span>
-                </div>
-                <input 
-                  type="range" min="0" max="1" step="0.1" value={settings.temperature} 
-                  onChange={(e) => {
-                    setSettings({...settings, temperature: parseFloat(e.target.value)});
-                    setIsCreativityOptimized(false);
-                  }} 
-                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-indigo-600" 
-                />
-                <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase"><span>{t.literal}</span><span>{t.creative}</span></div>
             </div>
           </div>
         </div>
