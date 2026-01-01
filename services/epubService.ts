@@ -6,6 +6,7 @@ import { UILanguage } from '../App';
 export interface LogEntry {
   timestamp: string;
   text: string;
+  type?: 'info' | 'success' | 'warning' | 'error' | 'live';
 }
 
 export interface UsageStats {
@@ -55,8 +56,8 @@ const STRINGS_LOGS: Record<string, any> = {
     stop: "Durduruldu.",
     quotaExceeded: "Kota sınırı! 60 saniye bekleniyor...",
     finished: "Çeviri tamamlandı!",
-    processingFile: "İşleniyor: {0} ({1}/{2}) - {3} düğüm bulundu.",
-    noNodes: "Bu dosyada hedef etiket bulunamadı, atlanıyor.",
+    processingFile: "Dosya: {0} ({1}/{2})",
+    noNodes: "Hedef etiket bulunamadı, atlanıyor.",
     error: "Hata: {0}",
     saving: "EPUB dosyası paketleniyor...",
     nodeProgress: "Dosya içi ilerleme: %{0}"
@@ -68,7 +69,7 @@ const STRINGS_LOGS: Record<string, any> = {
     stop: "Stopped.",
     quotaExceeded: "Quota exceeded! Waiting 60s...",
     finished: "Completed!",
-    processingFile: "Processing: {0} ({1}/{2}) - {3} nodes found.",
+    processingFile: "File: {0} ({1}/{2})",
     noNodes: "No nodes found, skipping.",
     error: "Error: {0}",
     saving: "Packaging EPUB...",
@@ -82,7 +83,15 @@ function getLogStr(uiLang: string, key: string): string {
 }
 
 function preprocessHtml(html: string): string {
-  return html.replace(/&(?!(amp|lt|gt|quot|apos);)[a-z0-9]+;/gi, ' ');
+  return html.replace(/&(?!(amp|lt|gt|quot|apos|#);)[a-z0-9]+;/gi, (match) => {
+      const map: Record<string, string> = { '&nbsp;': ' ', '&ndash;': '–', '&mdash;': '—' };
+      return map[match] || ' ';
+  });
+}
+
+function cleanTextForLog(html: string): string {
+  const text = html.replace(/<[^>]*>/g, '').trim();
+  return text.length > 50 ? text.substring(0, 50) + "..." : text;
 }
 
 export async function processEpub(
@@ -96,14 +105,13 @@ export async function processEpub(
   const translator = new GeminiTranslator(settings.temperature, settings.sourceLanguage, settings.targetLanguage, settings.modelId);
   const epubZip = await new JSZip().loadAsync(await file.arrayBuffer());
 
-  // Değişkenleri en başta ilklendir (Initialization Error engellemek için)
   let totalWords = 0;
   let processedFilesCount = resumeFrom ? resumeFrom.zipPathIndex : 0;
   let processList: string[] = [];
   const translatedNodes: Record<string, string[]> = resumeFrom ? { ...resumeFrom.translatedNodes } : {};
   let strategy: BookStrategy | undefined = undefined;
   let cumulativeLogs: LogEntry[] = [
-    { timestamp: new Date().toLocaleTimeString(), text: getLogStr(ui, 'analyzing') }
+    { timestamp: new Date().toLocaleTimeString(), text: getLogStr(ui, 'analyzing'), type: 'info' }
   ];
 
   const triggerProgress = (updates: Partial<TranslationProgress>) => {
@@ -121,39 +129,35 @@ export async function processEpub(
     });
   };
 
-  const addLog = (text: string) => {
-    cumulativeLogs.push({ timestamp: new Date().toLocaleTimeString(), text });
-    if (cumulativeLogs.length > 50) cumulativeLogs.shift();
+  const addLog = (text: string, type: LogEntry['type'] = 'info') => {
+    cumulativeLogs.push({ timestamp: new Date().toLocaleTimeString(), text, type });
+    if (cumulativeLogs.length > 100) cumulativeLogs.shift();
     triggerProgress({});
   };
 
-  // 1. Analiz Aşaması
   triggerProgress({ status: 'analyzing' });
 
   const containerXml = await epubZip.file("META-INF/container.xml")?.async("string");
-  if (!containerXml) throw new Error("Geçersiz EPUB: container.xml yok.");
+  if (!containerXml) throw new Error("Invalid EPUB: container.xml missing.");
 
   const parser = new DOMParser();
   const containerDoc = parser.parseFromString(containerXml, "application/xml");
   const opfPath = containerDoc.querySelector("rootfile")?.getAttribute("full-path");
-  if (!opfPath) throw new Error("Geçersiz EPUB: OPF yolu yok.");
+  if (!opfPath) throw new Error("Invalid EPUB: OPF path missing.");
 
   const opfContent = await epubZip.file(opfPath)?.async("string");
-  if (!opfContent) throw new Error("Geçersiz EPUB: OPF boş.");
-  
-  const opfDoc = parser.parseFromString(opfContent, "application/xml");
+  const opfDoc = parser.parseFromString(opfContent || "", "application/xml");
   const opfFolder = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/')) : '';
 
   const metadata = {
-    title: opfDoc.querySelector("dc\\:title, title")?.textContent || "Kitap",
-    creator: opfDoc.querySelector("dc\\:creator, creator")?.textContent || "Yazar",
+    title: opfDoc.querySelector("dc\\:title, title")?.textContent || "Untitled",
+    creator: opfDoc.querySelector("dc\\:creator, creator")?.textContent || "Unknown Author",
     description: opfDoc.querySelector("dc\\:description, description")?.textContent || ""
   };
 
   strategy = await translator.analyzeBook(metadata, undefined, ui);
   translator.setStrategy(strategy);
 
-  // 2. Dosya Listesi Hazırlama
   const manifestItems = Array.from(opfDoc.querySelectorAll("manifest > item"));
   const idToHref: Record<string, string> = {};
   manifestItems.forEach(item => {
@@ -169,31 +173,25 @@ export async function processEpub(
     const href = idToHref[idref];
     const rawPath = opfFolder ? `${opfFolder}/${href}` : href;
     const decodedPath = decodeURIComponent(rawPath);
-    if (epubZip.file(decodedPath)) return decodedPath;
-    if (epubZip.file(rawPath)) return rawPath;
-    return null;
+    return epubZip.file(decodedPath) ? decodedPath : (epubZip.file(rawPath) ? rawPath : null);
   }).filter(Boolean) as string[];
 
-  addLog(getLogStr(ui, 'found').replace('{0}', processList.length.toString()));
+  addLog(getLogStr(ui, 'found').replace('{0}', processList.length.toString()), 'success');
   const startTime = Date.now();
 
-  // 3. Çeviri Döngüsü
   for (let zipIdx = processedFilesCount; zipIdx < processList.length; zipIdx++) {
     const path = processList[zipIdx];
     if (signal.aborted) throw new Error(getLogStr(ui, 'stop'));
 
     const originalContent = await epubZip.file(path)?.async("string");
-    if (!originalContent) {
-      processedFilesCount++;
-      continue;
-    }
+    if (!originalContent) { processedFilesCount++; continue; }
 
     const cleanContent = preprocessHtml(originalContent);
-    const doc = parser.parseFromString(cleanContent, "text/html");
-    const nodes = Array.from(doc.querySelectorAll(settings.targetTags.join(',')));
+    const doc = parser.parseFromString(cleanContent, "application/xhtml+xml");
+    const selector = settings.targetTags.join(',');
+    const nodes = Array.from(doc.querySelectorAll(selector));
 
     if (nodes.length === 0) {
-      addLog(`${path.split('/').pop()}: ${getLogStr(ui, 'noNodes')}`);
       processedFilesCount++;
       continue;
     }
@@ -202,8 +200,8 @@ export async function processEpub(
       getLogStr(ui, 'processingFile')
         .replace('{0}', path.split('/').pop() || path)
         .replace('{1}', (zipIdx + 1).toString())
-        .replace('{2}', processList.length.toString())
-        .replace('{3}', nodes.length.toString())
+        .replace('{2}', processList.length.toString()),
+      'info'
     );
 
     if (!translatedNodes[path]) translatedNodes[path] = [];
@@ -212,9 +210,8 @@ export async function processEpub(
     for (let nodeIdx = startNodeIdx; nodeIdx < nodes.length; nodeIdx++) {
       if (signal.aborted) throw new Error(getLogStr(ui, 'stop'));
       const node = nodes[nodeIdx];
-      
       const originalInner = node.innerHTML.trim();
-      if (!originalInner || originalInner.length < 2) continue;
+      if (!originalInner || originalInner.length < 1) continue;
 
       if (translatedNodes[path][nodeIdx]) {
         node.innerHTML = translatedNodes[path][nodeIdx];
@@ -228,6 +225,9 @@ export async function processEpub(
           translatedNodes[path][nodeIdx] = translated;
           totalWords += (node.textContent || "").split(/\s+/).filter(Boolean).length;
 
+          // Gerçek zamanlı çıktı logu
+          addLog(`✓ ${cleanTextForLog(translated)}`, 'live');
+
           const elapsed = (Date.now() - startTime) / 1000;
           const wps = totalWords / Math.max(1, elapsed);
           const currentFilePercent = ((nodeIdx + 1) / nodes.length);
@@ -237,38 +237,30 @@ export async function processEpub(
             currentPercent: overallPercent,
             wordsPerSecond: wps,
             lastZipPathIndex: zipIdx,
-            lastNodeIndex: nodeIdx
+            lastNodeIndex: nodeIdx,
+            etaSeconds: Math.round((processList.length - (zipIdx + currentFilePercent)) * (elapsed / (zipIdx + currentFilePercent + 0.0001)))
           });
         }
       } catch (err: any) {
         if (err.message?.includes('429') || err.message?.includes('quota')) {
-          addLog(getLogStr(ui, 'quotaExceeded'));
+          addLog(getLogStr(ui, 'quotaExceeded'), 'warning');
           await new Promise(r => setTimeout(r, 65000));
           nodeIdx--;
           continue;
         }
-        console.warn(`Node translation failed at ${path}:${nodeIdx}`, err);
+        addLog(`! Düğüm hatası (${nodeIdx}): ${err.message}`, 'error');
       }
     }
 
-    // XHTML uyumluluğu için serialization
     const serializer = new XMLSerializer();
-    const serialized = serializer.serializeToString(doc);
-    epubZip.file(path, serialized);
+    epubZip.file(path, serializer.serializeToString(doc));
     processedFilesCount++;
-    triggerProgress({ currentPercent: Math.round((processedFilesCount / processList.length) * 100) });
   }
 
-  addLog(getLogStr(ui, 'saving'));
+  addLog(getLogStr(ui, 'saving'), 'info');
+  const epubBlob = await epubZip.generateAsync({ type: "blob", mimeType: "application/epub+zip", compression: "DEFLATE" });
+  addLog(getLogStr(ui, 'finished'), 'success');
 
-  const epubBlob = await epubZip.generateAsync({ 
-    type: "blob", 
-    mimeType: "application/epub+zip",
-    compression: "DEFLATE",
-    compressionOptions: { level: 9 }
-  });
-
-  cumulativeLogs.push({ timestamp: new Date().toLocaleTimeString(), text: getLogStr(ui, 'finished') });
   onProgress({
     currentFile: processList.length, totalFiles: processList.length, currentPercent: 100,
     status: 'completed', logs: [...cumulativeLogs],

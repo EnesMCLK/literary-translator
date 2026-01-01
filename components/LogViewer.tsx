@@ -9,9 +9,17 @@ interface LogViewerProps {
 
 export const LogViewer: React.FC<LogViewerProps> = ({ logs, readyText }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Sadece kullanıcı yukarı kaydırmamışsa otomatik kaydır
+    if (containerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+      if (isAtBottom) {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   }, [logs]);
 
   if (logs.length === 0) {
@@ -23,22 +31,34 @@ export const LogViewer: React.FC<LogViewerProps> = ({ logs, readyText }) => {
     );
   }
 
+  const getTypeStyles = (type?: string) => {
+    switch (type) {
+      case 'success': return 'border-green-500 text-green-600 dark:text-green-400 bg-green-50/30 dark:bg-green-950/10';
+      case 'error': return 'border-red-500 text-red-600 dark:text-red-400 bg-red-50/30 dark:bg-red-950/10';
+      case 'warning': return 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-950/10';
+      case 'live': return 'border-indigo-400 text-slate-500 dark:text-slate-400 border-dashed italic opacity-80';
+      default: return 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200';
+    }
+  };
+
   return (
-    <div className="space-y-3 text-slate-900 dark:text-slate-100 pb-4">
-      {logs.map((log, index) => (
-        <div 
-          key={index} 
-          className="group flex gap-3 border-l-2 border-slate-100 dark:border-slate-800 pl-3 py-1 break-all hover:bg-slate-50 dark:hover:bg-slate-800/30 hover:border-indigo-400 transition-all rounded-r-lg"
-        >
-          <span className="text-indigo-500 dark:text-indigo-400 font-bold shrink-0 font-mono text-[9px] mt-1 tracking-tighter uppercase">
-            {log.timestamp}
-          </span>
-          <span className="leading-relaxed font-medium text-[12px] tracking-wide text-slate-700 dark:text-slate-200">
-            {log.text}
-          </span>
-        </div>
-      ))}
-      <div ref={bottomRef} />
+    <div ref={containerRef} className="h-full overflow-y-auto custom-scrollbar px-1">
+      <div className="space-y-2 pb-4">
+        {logs.map((log, index) => (
+          <div 
+            key={index} 
+            className={`group flex gap-3 border-l-2 pl-3 py-1.5 break-all transition-all rounded-r-lg hover:brightness-105 ${getTypeStyles(log.type)}`}
+          >
+            <span className="font-mono text-[8px] md:text-[9px] opacity-40 shrink-0 mt-0.5 select-none uppercase tracking-tighter">
+              {log.timestamp}
+            </span>
+            <span className={`leading-relaxed text-[11px] md:text-[12px] tracking-wide font-medium ${log.type === 'live' ? 'font-serif' : 'font-sans'}`}>
+              {log.text}
+            </span>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 };
