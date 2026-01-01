@@ -33,6 +33,12 @@ This project is a static website. It does **not** require Python or Node.js inst
 2.  Open the `index.html` file in your browser (Chrome/Edge/Firefox).
 3.  Enter your **Google AI Studio API Key** and start translating.
 
+### Method 2: Deploy with Cloudflare Pages (Recommended)
+1.  Fork this repository to your GitHub account.
+2.  Go to **Cloudflare Dashboard** -> **Pages** -> **Connect to Git**.
+3.  Select this repository and click **Deploy**.
+4.  Your tool will be live at `https://your-site-name.pages.dev` forever for free!
+
 ## 🧩 Technical Architecture
 
 * **Frontend:** HTML5, TailwindCSS (CDN), Vanilla JavaScript / TypeScript.
@@ -47,6 +53,5 @@ This tool uses the Google Gemini API. On the Free Tier, your data may be used by
 
 ### 🤝 Contributing
 Feel free to submit a "Pull Request" to improve the project or add new features (e.g., batch file processing)!
-
 
 **License:** MIT License.
