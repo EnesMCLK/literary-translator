@@ -63,7 +63,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     systemLogsReady: "Sistem Girişleri Bekleniyor...", verifyingError: "Doğrulama hatası!", literal: "Sadık", creative: "Yaratıcı",
     quotaError: "KOTA DOLDU: Lütfen yaklaşık 60 saniye bekleyin. Çeviri durduruldu, kaldığınız yerden devam edebilirsiniz.",
     interfaceSettings: "ARAYÜZ AYARLARI", themeMode: "TEMA MODU", appLanguage: "UYGULAMA DİLİ",
-    copyright: "2024 AI Literary EPUB Translator. Tüm hakları saklıdır.", madeWith: "Gemini AI ile sevgiyle yapıldı.", learnMore: "Bilgi Al",
+    copyright: "2024 AI Literary EPUB Translator. Tüm hakları saklıdır.", madeWith: "GEMINI AI ILE SEVGIYLE YAPILDI.", learnMore: "BİLGİ AL",
     legalWarningTitle: "YASAL SORUMLULUK REDDİ VE KULLANIM KOŞULLARI",
     legalWarningText: "Bu yazılım ('Araç'), kullanıcıların EPUB formatındaki içerikleri yapay zeka desteğiyle yerelleştirmesine olanak tanıyan deneysel bir yardımcı programdır. İşbu Aracı kullanarak aşağıdaki hususları peşinen kabul etmiş sayılırsınız:",
     legalPoints: [
@@ -87,7 +87,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     systemLogsReady: "Waiting for logs...", verifyingError: "Key error!", literal: "Literal", creative: "Creative",
     quotaError: "QUOTA EXCEEDED: Please wait about 60 seconds. Translation paused, you can resume later.",
     interfaceSettings: "INTERFACE SETTINGS", themeMode: "THEMODE", appLanguage: "APP LANGUAGE",
-    copyright: "2024 AI Literary EPUB Translator. All rights reserved.", madeWith: "Made with love with Gemini AI.", learnMore: "Learn More",
+    copyright: "2024 AI Literary EPUB Translator. All rights reserved.", madeWith: "MADE WITH LOVE WITH GEMINI AI.", learnMore: "INFO",
     legalWarningTitle: "LEGAL DISCLAIMER & TERMS OF SERVICE",
     legalWarningText: "This software ('Tool') is an experimental utility designed to assist users in localizing EPUB content via AI. By utilizing this Tool, you explicitly acknowledge and agree to the following terms:",
     legalPoints: [
@@ -519,8 +519,8 @@ export default function App() {
       </div>
 
       <main className="flex-1 pt-32 md:pt-36 flex flex-col items-center">
-        <div className="w-full max-w-5xl px-6 py-6 md:py-12 space-y-8 md:space-y-12">
-            <section className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[3rem] border border-slate-200 dark:border-slate-800 p-6 md:p-12 space-y-8 md:space-y-10 shadow-xl">
+        <div className="w-full max-w-5xl px-6 py-6 md:py-12 space-y-8 md:space-y-12 flex flex-col items-center">
+            <section className="w-full bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[3rem] border border-slate-200 dark:border-slate-800 p-6 md:p-12 space-y-8 md:space-y-10 shadow-xl">
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">{t.uploadLabel}</label>
                   <div className="relative group cursor-pointer">
@@ -573,7 +573,7 @@ export default function App() {
                 </div>
             </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
+            <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
               <section className="md:col-span-5 bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[3rem] border border-slate-200 dark:border-slate-800 p-8 md:p-10 space-y-6 shadow-sm relative overflow-hidden group">
                 <div className="flex items-center gap-3 text-indigo-600"><Sparkles size={18} md:size={20}/> <h3 className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.2em]">{t.aiAnalysis}</h3></div>
                 <div className="min-h-[120px] md:min-h-[160px] flex flex-col justify-center">
@@ -593,39 +593,41 @@ export default function App() {
               </section>
             </div>
 
-            {/* Legal Warning Card - Interactive Toggle */}
+            {/* Legal Warning Card - Optimized & Compact */}
             <section 
               onClick={() => setIsLegalExpanded(!isLegalExpanded)}
-              className={`bg-white dark:bg-slate-900 rounded-[2.5rem] border-2 transition-all duration-500 p-8 md:p-12 shadow-2xl mb-24 relative overflow-hidden cursor-pointer group hover:border-indigo-400 ${isLegalExpanded ? 'border-indigo-500 ring-4 ring-indigo-500/5' : 'border-slate-100 dark:border-slate-800'}`}
+              className={`w-full max-w-[680px] bg-white dark:bg-[#1a1405] rounded-[2.5rem] md:rounded-[3rem] border-2 transition-all duration-700 p-5 md:p-8 shadow-[0_10px_40px_-15px_rgba(245,158,11,0.15)] mb-12 relative overflow-hidden cursor-pointer group select-none hover:shadow-[0_15px_50px_-10px_rgba(245,158,11,0.2)] ${isLegalExpanded ? 'border-amber-400 ring-4 ring-amber-500/5' : 'border-slate-100 dark:border-amber-900/10'}`}
             >
-                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                   <Gavel size={120} />
+                {/* Background Silhouette */}
+                <div className="absolute top-0 right-0 p-6 text-amber-900/5 dark:text-amber-100/5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                   <Gavel size={140} />
                 </div>
-                <div className="flex flex-col gap-8 relative z-10">
-                    <div className="flex items-center justify-between">
+                
+                <div className="flex flex-col relative z-10">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-4">
-                          <div className={`p-4 transition-colors duration-500 rounded-[1.5rem] shadow-xl ${isLegalExpanded ? 'bg-indigo-600 text-white' : 'bg-slate-950 dark:bg-slate-800 text-slate-400'}`}>
+                          <div className={`w-14 h-14 md:w-16 md:h-16 flex-shrink-0 flex items-center justify-center transition-all duration-500 rounded-2xl md:rounded-[1.4rem] shadow-lg ${isLegalExpanded ? 'bg-amber-500 text-white' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-600'}`}>
                               <Shield size={24} />
                           </div>
-                          <h4 className={`text-[14px] md:text-[16px] font-black uppercase tracking-[0.2em] border-b-2 pb-1 transition-colors ${isLegalExpanded ? 'text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-slate-900 dark:text-white border-transparent'}`}>
+                          <h4 className="text-[13px] md:text-[15px] font-black uppercase tracking-[0.12em] text-slate-800 dark:text-amber-100 leading-tight">
                             {t.legalWarningTitle}
                           </h4>
                       </div>
-                      <div className="p-2 text-slate-400 group-hover:text-indigo-500 transition-colors">
-                        {isLegalExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                      <div className={`p-1.5 transition-all duration-500 ${isLegalExpanded ? 'text-amber-600 rotate-180' : 'text-slate-400 group-hover:text-amber-500'}`}>
+                        <ChevronDown size={20} strokeWidth={3} />
                       </div>
                     </div>
                     
-                    <div className="space-y-6">
-                        <p className={`text-[12px] md:text-[14px] leading-relaxed font-bold italic transition-colors ${isLegalExpanded ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'}`}>
+                    <div className="space-y-3">
+                        <p className={`text-[11px] md:text-[12px] leading-relaxed font-bold italic transition-all duration-500 text-justify ${isLegalExpanded ? 'text-slate-900 dark:text-amber-50' : 'text-slate-500 dark:text-amber-100/50'}`}>
                           {t.legalWarningText}
                         </p>
                         
-                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-700 overflow-hidden ${isLegalExpanded ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 transition-all duration-700 overflow-hidden ${isLegalExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                           {t.legalPoints.map((point: string, idx: number) => (
-                            <div key={idx} className="flex gap-4 p-5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-lg transition-all">
-                                <div className="text-indigo-500 font-black text-sm pt-0.5">{idx + 1}.</div>
-                                <p className="text-[11px] md:text-[12px] leading-snug font-medium text-slate-600 dark:text-slate-300">
+                            <div key={idx} className="flex gap-3 p-3 bg-slate-50/50 dark:bg-amber-950/10 rounded-xl border border-amber-100/50 dark:border-amber-800/20 hover:border-amber-400 transition-all">
+                                <div className="text-amber-500 font-black text-xs pt-0.5">{idx + 1}.</div>
+                                <p className="text-[10px] md:text-[11px] leading-snug font-medium text-slate-600 dark:text-amber-100/80 text-justify">
                                   {point}
                                 </p>
                             </div>
@@ -633,15 +635,13 @@ export default function App() {
                         </div>
                     </div>
 
-                    {!isLegalExpanded && (
-                      <div className="flex items-center justify-center gap-2 animate-pulse py-2">
-                        <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{t.learnMore}</span>
-                      </div>
-                    )}
-
-                    <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-3">
-                        <Heart size={14} className="text-red-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.madeWith}</span>
+                    <div className="flex flex-col items-center mt-4 gap-3">
+                       <div className="w-full pt-4 border-t border-slate-100 dark:border-amber-900/10 flex items-center justify-center gap-2.5">
+                          <Heart size={14} className={`transition-colors duration-500 ${isLegalExpanded ? 'text-red-500 fill-red-500' : 'text-slate-300 dark:text-amber-900/30'}`} />
+                          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-amber-100/20">
+                            {t.madeWith}
+                          </span>
+                       </div>
                     </div>
                 </div>
             </section>
