@@ -9,5 +9,3 @@ export default defineConfig({
     emptyOutDir: true, // Her seferinde temizle
   }
 })
-
-

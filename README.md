@@ -48,5 +48,4 @@ This tool uses the Google Gemini API. On the Free Tier, your data may be used by
 ### 🤝 Contributing
 Feel free to submit a "Pull Request" to improve the project or add new features (e.g., batch file processing)!
 
-
 **License:** MIT License.
