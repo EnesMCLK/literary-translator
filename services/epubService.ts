@@ -445,7 +445,7 @@ export async function processEpub(
   const isFactual = factualKeywords.some(k => genreEn.includes(k));
   
   if (isFactual) {
-    translator.updateTemperature(0.1); // Force low temperature for factual content
+    translator.updateTemperature(0.1); 
   }
 
   const creativityInfo = isFactual 
@@ -579,9 +579,15 @@ export async function processEpub(
     processedFiles++;
   }
 
+  // To ensure the output is identified as a pure EPUB and not a generic ZIP by browsers,
+  // we use standard EPUB MIME type and ensure the internal structure is maintained.
   const epubBlob = await epubZip.generateAsync({ 
     type: "blob",
-    mimeType: "application/epub+zip"
+    mimeType: "application/epub+zip",
+    compression: "DEFLATE",
+    compressionOptions: {
+        level: 9
+    }
   });
 
   updateProgress(getS(ui, 'pdf'));

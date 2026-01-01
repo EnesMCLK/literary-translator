@@ -1,5 +1,5 @@
 {
-  "name": "Literary Translator",
+  "name": "Literary EPUB Translator",
   "description": "A client-side tool to translate EPUB books from English to Turkish using Google Gemini, preserving formatting and style.",
   "requestFramePermissions": []
 }
