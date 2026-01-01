@@ -3,10 +3,10 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  root: './', 
-  publicDir: 'public',
+  root: './',          // Dosyalar kök dizinde
+  base: '/',           // Site kök dizinden çalışacak
   build: {
-    outDir: 'dist',
-    emptyOutDir: true, 
+    outDir: 'dist',    // Çıktı klasörü dist
+    emptyOutDir: true, // Her seferinde temizle
   }
 })
