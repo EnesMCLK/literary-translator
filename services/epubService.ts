@@ -56,7 +56,9 @@ const STRINGS_LOGS: Record<string, any> = {
     finished: "Tamamlandı!",
     processingFile: "İşleniyor: {0}",
     saving: "Dosyalar hazırlanıyor...",
-    error: "Hata: {0}"
+    error: "Hata: {0}",
+    repairing: "Eksik kısımlar tespit edildi, onarılıyor...",
+    verifying: "Çeviri bütünlüğü doğrulanıyor..."
   },
   en: {
     analyzing: "Analyzing...",
@@ -65,7 +67,9 @@ const STRINGS_LOGS: Record<string, any> = {
     finished: "Completed!",
     processingFile: "Processing: {0}",
     saving: "Preparing files...",
-    error: "Error: {0}"
+    error: "Error: {0}",
+    repairing: "Missing parts detected, repairing...",
+    verifying: "Verifying translation integrity..."
   }
 };
 
@@ -181,7 +185,16 @@ export async function processEpub(
             translatedNodes[path][nodeIdx] = trans;
             totalWords += (node.textContent || "").split(/\s+/).length;
           } catch (err: any) {
-            if (err.message?.includes('429')) {
+            if (err.message === "TRANSLATION_SKIPPED_OR_INVALID") {
+                addLog(getLogStr(ui, 'repairing'), 'warning');
+                try {
+                    const repaired = await translator.translateSingle(original, true);
+                    node.innerHTML = repaired;
+                    translatedNodes[path][nodeIdx] = repaired;
+                } catch {
+                    node.innerHTML = original; // Son çare orijinali bırak
+                }
+            } else if (err.message?.includes('429')) {
               addLog(getLogStr(ui, 'quotaExceeded'), 'warning');
               await new Promise(r => setTimeout(r, 65000));
               nodeIdx--; continue;
@@ -189,9 +202,21 @@ export async function processEpub(
           }
         }
         
+        // Geçen süre ve ilerleme yüzdesi
+        const elapsed = (Date.now() - startTime) / 1000;
+        const currentProgressFrac = (zipIdx + (nodeIdx / nodes.length)) / processList.length;
+        
+        // ETA Hesaplama (İlerleme %1'den büyükse hesapla)
+        let eta = 0;
+        if (currentProgressFrac > 0.01) {
+          const totalEstimatedTime = elapsed / currentProgressFrac;
+          eta = Math.max(0, Math.round(totalEstimatedTime - elapsed));
+        }
+
         triggerProgress({
-            currentPercent: Math.round(((zipIdx + (nodeIdx / nodes.length)) / processList.length) * 100),
-            wordsPerSecond: totalWords / ((Date.now() - startTime) / 1000),
+            currentPercent: Math.round(currentProgressFrac * 100),
+            wordsPerSecond: totalWords / elapsed,
+            etaSeconds: eta,
             lastZipPathIndex: zipIdx,
             lastNodeIndex: nodeIdx
         });

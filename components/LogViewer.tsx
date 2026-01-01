@@ -8,16 +8,21 @@ interface LogViewerProps {
 }
 
 export const LogViewer: React.FC<LogViewerProps> = ({ logs, readyText }) => {
-  const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Sadece kullanıcı yukarı kaydırmamışsa otomatik kaydır
     if (containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      // Eğer kullanıcı en alttan 100px içerisindeyse otomatik kaydırmaya devam et
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+      
       if (isAtBottom) {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        // scrollIntoView yerine element bazlı scrollTo kullanarak sayfanın zıplamasını engelliyoruz
+        containerRef.current.scrollTo({
+          top: scrollHeight,
+          behavior: 'smooth'
+        });
       }
     }
   }, [logs]);
@@ -57,7 +62,6 @@ export const LogViewer: React.FC<LogViewerProps> = ({ logs, readyText }) => {
             </span>
           </div>
         ))}
-        <div ref={bottomRef} />
       </div>
     </div>
   );

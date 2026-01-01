@@ -21,7 +21,7 @@ export class GeminiTranslator {
   private temperature: number;
   private sourceLanguage: string;
   private targetLanguage: string;
-  private cachePrefix = 'lit-v14-';
+  private cachePrefix = 'lit-v15-';
   private bookStrategy: BookStrategy | null = null;
   private usage: UsageStats = {
     promptTokens: 0,
@@ -56,25 +56,49 @@ export class GeminiTranslator {
     return { ...this.usage };
   }
 
-  private getSystemInstruction(): string {
+  private getSystemInstruction(isRepairMode: boolean = false): string {
     const styleContext = this.bookStrategy 
       ? `BOOK CONTEXT:
          - Genre: ${this.bookStrategy.genre_en}
          - Tone: ${this.bookStrategy.tone_en}
-         - Style: ${this.bookStrategy.author_style_en}
-         - Strategy: ${this.bookStrategy.strategy_en}`
+         - Style: ${this.bookStrategy.author_style_en}`
       : "Professional literary translation.";
+
+    const repairInstruction = isRepairMode 
+      ? `CRITICAL: You previously failed to translate this text or returned it in original language. 
+         YOU MUST TRANSLATE THE TEXT INTO ${this.targetLanguage} NOW. NO EXCEPTIONS.` 
+      : "";
 
     return `ACT AS AN EXPERT LITERARY TRANSLATOR. Translate from ${this.sourceLanguage} to ${this.targetLanguage}.
 
 ${styleContext}
+${repairInstruction}
 
 STRICT TECHNICAL RULES:
 1. **HTML TAG PRESERVATION:** The input is an HTML/XHTML inner snippet. Keep ALL tags (like <span class="...">, <em>, <strong>, <a>, <br/>) exactly as they are. ONLY translate the text content between them.
-2. **NO MARKDOWN:** Do NOT wrap the output in code blocks like \`\`\`html or \`\`\`. Provide raw string output.
-3. **LITERARY FLOW:** Recreate the author's voice. Do not translate literally; adapt idioms and cultural nuances to feel natural in ${this.targetLanguage}.
-4. **NO CHATTER:** Return ONLY the translated snippet. No explanations.
-5. **TAG STRUCTURE:** Ensure every opening tag has its closing tag in the same order as the source. Do NOT add new tags.`;
+2. **LITERARY FLOW:** Recreate the author's voice. Do not translate literally; adapt idioms and cultural nuances to feel natural in ${this.targetLanguage}.
+3. **NO CHATTER:** Return ONLY the translated snippet. No explanations.
+4. **COMPLETENESS:** Do not skip any sentences. If the input is long, ensure the output matches its full meaning.`;
+  }
+
+  /**
+   * Çevirinin doğruluğunu ve eksik kalıp kalmadığını kontrol eder.
+   */
+  private isTranslationSuspicious(original: string, translated: string): boolean {
+    const cleanOrig = original.replace(/<[^>]*>/g, '').trim();
+    const cleanTrans = translated.replace(/<[^>]*>/g, '').trim();
+    
+    if (!cleanTrans) return true; // Boş döndüyse
+    if (cleanOrig.length > 10 && cleanOrig === cleanTrans) return true; // Hiç değişmediyse (ve kısa bir etiket değilse)
+    
+    // Basit dil algılama: Hedef Türkçe ise ve sık kullanılan İngilizce kelimeler hala duruyorsa
+    if (this.targetLanguage.toLowerCase().includes('turkish')) {
+        const englishMarkers = [' the ', ' and ', ' with ', ' that ', ' which '];
+        const foundMarkers = englishMarkers.filter(m => cleanTrans.toLowerCase().includes(m));
+        if (foundMarkers.length > 2 && cleanOrig.length > 50) return true;
+    }
+
+    return false;
   }
 
   async analyzeBook(metadata: any, coverInfo?: { data: string, mimeType: string }, uiLang: UILanguage = 'en'): Promise<BookStrategy> {
@@ -86,15 +110,6 @@ STRICT TECHNICAL RULES:
     Title: ${metadata.title}
     Author: ${metadata.creator}
     Description: ${metadata.description}
-    
-    INSTRUCTIONS:
-    1. Research the author "${metadata.creator}" and this specific work if possible.
-    2. Determine the author's characteristic writing style, vocabulary complexity, and narrative tone.
-    3. Suggest a 'detected_creativity_level' (0.0 to 1.0) for the translation:
-       - 0.0 to 0.2: Highly technical, academic, or factual texts requiring literal precision.
-       - 0.3 to 0.4: Classic literature, formal journalism, non-fiction narratives.
-       - 0.5 to 0.6: Modern fiction, colloquial dialogue, fast-paced thrillers.
-       - 0.7 to 0.9: Poetry, experimental prose, or avant-garde works needing creative localization.
     
     Return a JSON blueprint. All translated fields must be in the interface language: ${uiLang}.`;
 
@@ -117,7 +132,7 @@ STRICT TECHNICAL RULES:
               author_style_translated: { type: Type.STRING },
               strategy_translated: { type: Type.STRING },
               literary_fidelity_note: { type: Type.STRING },
-              detected_creativity_level: { type: Type.NUMBER, description: "Suggested temperature value based on author research." }
+              detected_creativity_level: { type: Type.NUMBER }
             },
             required: ["genre_en", "tone_en", "author_style_en", "strategy_en", "genre_translated", "tone_translated", "author_style_translated", "strategy_translated", "literary_fidelity_note", "detected_creativity_level"]
           }
@@ -132,7 +147,6 @@ STRICT TECHNICAL RULES:
 
       return JSON.parse(response.text || '{}');
     } catch (err) {
-      console.error("Analysis fail", err);
       return { 
         genre_en: "Literature", tone_en: "Narrative", author_style_en: "Fluid", strategy_en: "Fidelity",
         genre_translated: uiLang === 'tr' ? "Edebiyat" : "Literature", 
@@ -144,13 +158,15 @@ STRICT TECHNICAL RULES:
     }
   }
 
-  async translateSingle(htmlSnippet: string): Promise<string> {
+  async translateSingle(htmlSnippet: string, isRetry: boolean = false): Promise<string> {
     const trimmed = htmlSnippet.trim();
     if (!trimmed) return htmlSnippet;
     
-    const cacheKey = this.cachePrefix + btoa(encodeURIComponent(trimmed)).substring(0, 32);
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) return cached;
+    const cacheKey = this.cachePrefix + btoa(encodeURIComponent(trimmed)).substring(0, 32) + (isRetry ? '_repair' : '');
+    if (!isRetry) {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) return cached;
+    }
 
     const ai = new GoogleGenAI({ apiKey: this.getApiKey() });
     
@@ -159,8 +175,8 @@ STRICT TECHNICAL RULES:
         model: this.modelName,
         contents: trimmed,
         config: { 
-          systemInstruction: this.getSystemInstruction(), 
-          temperature: this.temperature 
+          systemInstruction: this.getSystemInstruction(isRetry), 
+          temperature: isRetry ? 0.1 : this.temperature // Onarım modunda daha deterministik
         }
       });
 
@@ -173,13 +189,17 @@ STRICT TECHNICAL RULES:
       let translated = (response.text || "").trim();
       translated = translated.replace(/^```(html|xhtml|xml)?\n?/i, '').replace(/\n?```$/i, '').trim();
 
+      // Doğrulama mekanizması
+      if (!isRetry && this.isTranslationSuspicious(trimmed, translated)) {
+          throw new Error("TRANSLATION_SKIPPED_OR_INVALID");
+      }
+
       if (translated && translated !== trimmed) {
         try { localStorage.setItem(cacheKey, translated); } catch (e) {}
       }
       
       return translated || trimmed;
     } catch (error: any) {
-      console.error("Translate API Error", error);
       throw error;
     }
   }

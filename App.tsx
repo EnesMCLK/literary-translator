@@ -42,7 +42,7 @@ const LANGUAGES_DATA = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' }, { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
   { code: 'es', label: 'Español', flag: '🇪🇸' }, { code: 'it', label: 'Italiano', flag: '🇮🇹' },
   { code: 'ru', label: 'Русский', flag: '🇷🇺' }, { code: 'zh', label: '中文', flag: '🇨🇳' },
-  { code: 'ja', label: '日本語', flag: '日本語' }, { code: 'ko', label: '한국어', flag: '🇰🇷' },
+  { code: 'ja', label: '日本語', flag: '🇯🇵' }, { code: 'ko', label: '한국어', flag: '🇰🇷' },
   { code: 'ar', label: 'العربية', flag: '🇸🇦' }, { code: 'pt', label: 'Português', flag: '🇵🇹' },
   { code: 'nl', label: 'Nederlands', flag: '🇳🇱' }, { code: 'pl', label: 'Polski', flag: '🇵🇱' },
   { code: 'hi', label: 'हिन्दी', flag: '🇮🇳' }, { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' }
@@ -63,7 +63,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     systemLogsReady: "Sistem Girişleri Bekleniyor...", verifyingError: "Doğrulama hatası!", literal: "Sadık", creative: "Yaratıcı",
     quotaError: "KOTA DOLDU: Lütfen yaklaşık 60 saniye bekleyin. Çeviri durduruldu, kaldığınız yerden devam edebilirsiniz.",
     interfaceSettings: "ARAYÜZ AYARLARI", themeMode: "TEMA MODU", appLanguage: "UYGULAMA DİLİ",
-    copyright: "2024 AI Literary EPUB Translator. Tüm hakları saklıdır.", madeWith: "GEMINI AI ILE SEVGIYLE YAPILDI.", learnMore: "BİLGİ AL",
+    copyright: "2024 AI Literary EPUB Translator. Tüm hakları saklıdır.", learnMore: "BİLGİ AL",
     aiOptimized: "AI OPTİMİZE EDİLDİ",
     legalWarningTitle: "YASAL SORUMLULUK REDDİ VE KULLANIM KOŞULLARI",
     legalWarningText: "Bu yazılım ('Araç'), kullanıcıların EPUB formatındaki içerikleri yapay zeka desteğiyle yerelleştirmesine olanak tanıyan deneysel bir yardımcı programdır. İşbu Aracı kullanarak aşağıdaki hususları peşinen kabul etmiş sayılırsınız:",
@@ -88,7 +88,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     systemLogsReady: "Waiting for logs...", verifyingError: "Key error!", literal: "Literal", creative: "Creative",
     quotaError: "QUOTA EXCEEDED: Please wait about 60 seconds. Translation paused, you can resume later.",
     interfaceSettings: "INTERFACE SETTINGS", themeMode: "THEME MODE", appLanguage: "APP LANGUAGE",
-    copyright: "2024 AI Literary EPUB Translator. All rights reserved.", madeWith: "MADE WITH LOVE WITH GEMINI AI.", learnMore: "INFO",
+    copyright: "2024 AI Literary EPUB Translator. All rights reserved.", learnMore: "INFO",
     aiOptimized: "AI OPTIMIZED",
     legalWarningTitle: "LEGAL DISCLAIMER & TERMS OF SERVICE",
     legalWarningText: "This software ('Tool') is an experimental utility designed to assist users in localizing EPUB content via AI. By utilizing this Tool, you explicitly acknowledge and agree to the following terms:",
@@ -110,6 +110,20 @@ LANGUAGES_DATA.forEach(lang => {
 
 const STORAGE_KEY_HISTORY = 'lit-trans-history';
 const STORAGE_KEY_RESUME = 'lit-trans-resume-v2';
+
+// Kalan süreyi formatlayan yardımcı fonksiyon
+function formatDuration(seconds?: number): string {
+  if (seconds === undefined || seconds < 0) return '--';
+  if (seconds === 0) return '0s';
+  
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
 
 export default function App() {
   const [uiLang, setUiLang] = useState<UILanguage>('en');
@@ -458,7 +472,7 @@ export default function App() {
               </div>
               <div className="flex items-center gap-3 md:gap-6 shrink-0">
                   <div className="flex items-center gap-1.5 md:gap-2"><Activity size={12} className="text-blue-500 md:w-3.5 md:h-3.5" /><span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase">{t.speed}:</span><span className="text-[10px] md:text-xs font-black italic whitespace-nowrap">{isProcessing ? `${progress.wordsPerSecond?.toFixed(1)} w/s` : '--'}</span></div>
-                  <div className="flex items-center gap-1.5 md:gap-2"><Clock size={12} className="text-amber-500 md:w-3.5 md:h-3.5" /><span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase">{t.eta}:</span><span className="text-[10px] md:text-xs font-black italic whitespace-nowrap">{isProcessing ? `${progress.etaSeconds}s` : '--'}</span></div>
+                  <div className="flex items-center gap-1.5 md:gap-2"><Clock size={12} className="text-amber-500 md:w-3.5 md:h-3.5" /><span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase">{t.eta}:</span><span className="text-[10px] md:text-xs font-black italic whitespace-nowrap">{isProcessing ? formatDuration(progress.etaSeconds) : '--'}</span></div>
               </div>
           </div>
       </div>
@@ -467,12 +481,14 @@ export default function App() {
         <div className="w-full max-w-5xl px-6 py-6 md:py-12 space-y-8 md:space-y-12 flex flex-col items-center">
             <section className="w-full bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[3rem] border border-slate-200 dark:border-slate-800 p-6 md:p-12 space-y-8 md:space-y-10 shadow-xl">
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">{t.uploadLabel}</label>
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] pl-2">{t.uploadLabel}</label>
                   <div className="relative group cursor-pointer">
                     <input type="file" accept=".epub" onChange={(e) => { const f = e.target.files?.[0]; if(f) { setFile(f); setDownloadUrl(null); setIsCreativityOptimized(false); } }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                    <div className={`py-12 md:py-16 border-3 border-dashed rounded-[2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all duration-500 ${file ? 'bg-indigo-50/20 border-indigo-500 scale-[1.01]' : 'bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'}`}>
-                      <Upload size={32} className={file ? 'text-indigo-600' : 'text-slate-300 dark:text-slate-600'} />
-                      <span className="text-sm md:text-base font-black text-slate-600 dark:text-slate-600 px-6 text-center leading-tight">{file ? file.name : t.uploadPlaceholder}</span>
+                    <div className={`py-12 md:py-16 border-3 border-dashed rounded-[2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all duration-500 shadow-inner ${file ? 'bg-indigo-50/20 dark:bg-indigo-500/10 border-indigo-500 scale-[1.01]' : 'bg-slate-50/50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}>
+                      <Upload size={32} className={`transition-colors duration-300 ${file ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-300 dark:text-slate-600 group-hover:text-indigo-500'}`} />
+                      <span className={`text-sm md:text-base font-black px-6 text-center leading-tight transition-colors duration-300 ${file ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600'}`}>
+                        {file ? file.name : t.uploadPlaceholder}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -534,21 +550,35 @@ export default function App() {
                           {t.legalPoints.map((point: string, idx: number) => (<div key={idx} className="flex gap-3 p-3 bg-slate-50/50 dark:bg-amber-950/10 rounded-xl border border-amber-100/50 dark:border-amber-800/20 hover:border-amber-400 transition-all"><div className="text-amber-500 font-black text-xs pt-0.5">{idx + 1}.</div><p className="text-[10px] md:text-[11px] leading-snug font-medium text-slate-600 dark:text-amber-100/80 text-justify">{point}</p></div>))}
                         </div>
                     </div>
-                    <div className="flex flex-col items-center mt-4 gap-3">
-                       <div className="w-full pt-4 border-t border-slate-100 dark:border-amber-900/10 flex items-center justify-center gap-2.5"><Heart size={14} className={`transition-colors duration-500 ${isLegalExpanded ? 'text-red-500 fill-red-500' : 'text-slate-300 dark:text-amber-900/30'}`} /><span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-amber-100/20">{t.madeWith}</span></div>
-                    </div>
                 </div>
             </section>
         </div>
       </main>
 
       {isLangModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-950/90 backdrop-blur-xl">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-12 border border-slate-200 dark:border-slate-800 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-fade-scale">
-            <div className="flex justify-between items-center mb-6 md:mb-10"><h3 className="text-xl md:text-3xl font-black">{t.selectLang}</h3><button onClick={() => setIsLangModalOpen(false)} className="p-2 md:p-4 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all hover:rotate-90"><X /></button></div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-5 overflow-y-auto max-h-[60vh] p-1 md:p-2 custom-scrollbar">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-950/80 backdrop-blur-xl">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-10 border border-slate-200 dark:border-slate-800 shadow-[0_40px_120px_rgba(0,0,0,0.5)] animate-fade-scale flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                <h3 className="text-xl md:text-2xl font-black tracking-tight text-slate-800 dark:text-slate-100 uppercase">{t.selectLang}</h3>
+                <button onClick={() => setIsLangModalOpen(false)} className="p-3 md:p-4 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all hover:rotate-90 text-slate-400"><X size={24} /></button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-5 overflow-y-auto pr-2 custom-scrollbar flex-1 pb-4">
               {LANGUAGES_DATA.map(l => (
-                <button key={l.code} onClick={() => { setUiLang(l.code as UILanguage); setIsLangModalOpen(false); localStorage.setItem('lit-trans-ui-lang', l.code) }} className={`p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-2 flex flex-col items-center gap-2 md:gap-4 transition-all duration-500 ${uiLang === l.code ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-2xl scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}><span className="text-3xl md:text-5xl">{l.flag}</span><span className="text-[9px] md:text-[11px] font-black uppercase tracking-widest text-center">{l.label}</span></button>
+                <button 
+                  key={l.code} 
+                  onClick={() => { setUiLang(l.code as UILanguage); setIsLangModalOpen(false); localStorage.setItem('lit-trans-ui-lang', l.code) }} 
+                  className={`group relative p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border-2 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${uiLang === l.code ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-xl shadow-indigo-500/10 scale-[1.02]' : 'border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/50 hover:border-slate-200 dark:hover:border-slate-700 hover:scale-[1.01]'}`}
+                >
+                  <span className="text-3xl md:text-5xl transition-transform duration-500 group-hover:scale-110 select-none">{l.flag}</span>
+                  <span className={`text-[10px] md:text-[12px] font-black uppercase tracking-widest text-center transition-colors ${uiLang === l.code ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'}`}>
+                    {l.label}
+                  </span>
+                  {uiLang === l.code && (
+                    <div className="absolute top-2 right-2 md:top-3 md:right-3 p-1 bg-indigo-500 rounded-full text-white shadow-lg">
+                      <Check size={10} strokeWidth={4} />
+                    </div>
+                  )}
+                </button>
               ))}
             </div>
           </div>
