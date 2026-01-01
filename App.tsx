@@ -53,7 +53,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     historyTitle: "ÇEVİRİ GEÇMİŞİ", clearHistory: "Tümünü Temizle", noHistory: "Kayıt yok",
     modelLabel: "MODEL SEÇİMİ", uploadLabel: "EPUB YÜKLEME", uploadPlaceholder: "Dosya sürükle veya seç",
     sourceLang: "KAYNAK DİL", targetLang: "HEDEF DİL", creativity: "YARATICILIK", htmlTags: "HTML ETİKETLERİ",
-    systemMonitor: "Sistem İzleyici", startBtn: "Çeviriyi Başlat", resumeBtn: "Devam Et", stopBtn: "Durdur", downloadBtn: "EPUB İNDİR", pdfBtn: "PDF İNDİR",
+    systemMonitor: "Sistem İzleyici", startBtn: "Çeviriyi Başlat", resumeBtn: "Devam Et", stopBtn: "Durdur", downloadBtn: "EPUB İNDİR",
     tokens: "TOKEN", speed: "HIZ", eta: "KALAN", processing: "İşleniyor", idle: "Hazır",
     title: "Edebi EPUB Çevirmeni", description: "Profesyonel Edebi Çeviri Engine", settingsTitle: "AYARLAR VE KONFİGÜRASYON",
     restoreSettings: "Geri Yükle", selectLang: "DİL SEÇİN", error: "HATA", apiStatus: "API DURUMU",
@@ -78,7 +78,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
     historyTitle: "TRANSLATION HISTORY", clearHistory: "Clear All", noHistory: "No history",
     modelLabel: "MODEL SELECTION", uploadLabel: "UPLOAD EPUB", uploadPlaceholder: "Drag or select file",
     sourceLang: "SOURCE LANG", targetLang: "TARGET LANG", creativity: "CREATIVITY", htmlTags: "HTML TAGS",
-    systemMonitor: "System Monitor", startBtn: "Start Translation", resumeBtn: "Resume", stopBtn: "Stop", downloadBtn: "DOWNLOAD EPUB", pdfBtn: "DOWNLOAD PDF",
+    systemMonitor: "System Monitor", startBtn: "Start Translation", resumeBtn: "Resume", stopBtn: "Stop", downloadBtn: "DOWNLOAD EPUB",
     tokens: "TOKENS", speed: "SPEED", eta: "ETA", processing: "Processing", idle: "Idle",
     title: "Literary EPUB Translator", description: "Professional Literary Translation Engine", settingsTitle: "SETTINGS & CONFIG",
     restoreSettings: "Restore", selectLang: "SELECT LANGUAGE", error: "ERROR", apiStatus: "API STATUS",
@@ -101,7 +101,7 @@ const STRINGS_REGISTRY: Record<string, any> = {
   }
 };
 
-// Fill other 14 languages with English as fallback and localized tags
+// Diğer dilleri İngilizce ile doldur
 LANGUAGES_DATA.forEach(lang => {
   if (!STRINGS_REGISTRY[lang.code]) {
     STRINGS_REGISTRY[lang.code] = { ...STRINGS_REGISTRY['en'] };
@@ -148,7 +148,6 @@ export default function App() {
   });
 
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-  const [pdfDownloadUrl, setPdfDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<{title: string, message: string} | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -213,17 +212,15 @@ export default function App() {
     if (!file) return;
     setIsProcessing(true);
     setDownloadUrl(null);
-    setPdfDownloadUrl(null);
     setIsCreativityOptimized(false);
     abortControllerRef.current = new AbortController();
     
     try {
-      const { epubBlob, pdfBlob } = await processEpub(
+      const { epubBlob } = await processEpub(
         file, 
         { ...settings, uiLang }, 
         (p) => {
           setProgress(prev => {
-            // AI optimized update
             if (p.strategy && !prev.strategy) {
                const recommendedTemp = p.strategy.detected_creativity_level;
                setSettings(s => ({ ...s, temperature: recommendedTemp }));
@@ -251,7 +248,6 @@ export default function App() {
       );
 
       setDownloadUrl(URL.createObjectURL(epubBlob));
-      setPdfDownloadUrl(URL.createObjectURL(pdfBlob));
       
       const newHistoryItem: HistoryItem = { id: Date.now().toString(), filename: file.name, sourceLang: settings.sourceLanguage, targetLang: settings.targetLanguage, modelId: settings.modelId || 'gemini', timestamp: new Date().toLocaleString(), status: 'completed', settingsSnapshot: { ...settings } };
       const updatedHistory = [newHistoryItem, ...history].slice(0, 20);
@@ -473,7 +469,7 @@ export default function App() {
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">{t.uploadLabel}</label>
                   <div className="relative group cursor-pointer">
-                    <input type="file" accept=".epub" onChange={(e) => { const f = e.target.files?.[0]; if(f) { setFile(f); setDownloadUrl(null); setPdfDownloadUrl(null); setIsCreativityOptimized(false); } }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <input type="file" accept=".epub" onChange={(e) => { const f = e.target.files?.[0]; if(f) { setFile(f); setDownloadUrl(null); setIsCreativityOptimized(false); } }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className={`py-12 md:py-16 border-3 border-dashed rounded-[2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all duration-500 ${file ? 'bg-indigo-50/20 border-indigo-500 scale-[1.01]' : 'bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'}`}>
                       <Upload size={32} className={file ? 'text-indigo-600' : 'text-slate-300 dark:text-slate-600'} />
                       <span className="text-sm md:text-base font-black text-slate-600 dark:text-slate-600 px-6 text-center leading-tight">{file ? file.name : t.uploadPlaceholder}</span>
@@ -495,9 +491,8 @@ export default function App() {
                   )}
                   {isProcessing && (<div className="w-full space-y-6 md:space-y-8 py-4"><ProgressBar progress={progress.currentPercent} /><button onClick={() => abortControllerRef.current?.abort()} className="mx-auto block px-10 md:px-14 py-3 rounded-full border-2 border-red-500/20 text-red-500 font-black text-[10px] uppercase hover:bg-red-50 dark:hover:bg-red-950/20 transition-all tracking-widest">{t.stopBtn}</button></div>)}
                   {downloadUrl && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full animate-fade-scale">
+                    <div className="w-full animate-fade-scale">
                       <a href={downloadUrl} download={`translated_${file?.name}`} className="flex items-center justify-center gap-4 p-5 md:p-7 bg-green-600 text-white rounded-[2rem] md:rounded-[2.5rem] font-black shadow-2xl hover:bg-green-700 transition-all text-lg md:text-xl"><Download size={24} /> {t.downloadBtn}</a>
-                      <a href={pdfDownloadUrl || '#'} download={`translated_${file?.name?.replace('.epub', '')}.pdf`} className="flex items-center justify-center gap-4 p-5 md:p-7 bg-slate-800 text-white rounded-[2rem] md:rounded-[2.5rem] font-black shadow-2xl hover:bg-slate-900 transition-all border border-slate-700 text-lg md:text-xl"><FileText size={24} /> {t.pdfBtn}</a>
                     </div>
                   )}
                 </div>
