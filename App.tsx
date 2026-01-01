@@ -7,7 +7,7 @@ import {
   ShieldCheck, Info, FileText, XCircle, RefreshCw, Check, Globe, X,
   Zap, BarChart3, Scale, ShieldAlert, Activity, BookOpen, User, Trash2, StepForward,
   Key, LayoutDashboard, Database, Link2, Menu, Lock, Unlock, ExternalLink, Eye, EyeOff,
-  BookType, Sun, Moon
+  BookType, Sun, Moon, Copyright, Heart, Shield, Gavel, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { processEpub, TranslationProgress, TranslationSettings, ResumeInfo } from './services/epubService';
@@ -62,7 +62,16 @@ const STRINGS_REGISTRY: Record<string, any> = {
     manualKeyPlaceholder: "API Anahtarınızı buraya yapıştırın...", aiAnalysis: "YAPAY ZEKA ANALİZİ", preparing: "HAZIRLIK BEKLENİYOR",
     systemLogsReady: "Sistem Girişleri Bekleniyor...", verifyingError: "Doğrulama hatası!", literal: "Sadık", creative: "Yaratıcı",
     quotaError: "KOTA DOLDU: Lütfen yaklaşık 60 saniye bekleyin. Çeviri durduruldu, kaldığınız yerden devam edebilirsiniz.",
-    interfaceSettings: "ARAYÜZ AYARLARI", themeMode: "TEMA MODU", appLanguage: "UYGULAMA DİLİ"
+    interfaceSettings: "ARAYÜZ AYARLARI", themeMode: "TEMA MODU", appLanguage: "UYGULAMA DİLİ",
+    copyright: "2024 AI Literary EPUB Translator. Tüm hakları saklıdır.", madeWith: "Gemini AI ile sevgiyle yapıldı.", learnMore: "Bilgi Al",
+    legalWarningTitle: "YASAL SORUMLULUK REDDİ VE KULLANIM KOŞULLARI",
+    legalWarningText: "Bu yazılım ('Araç'), kullanıcıların EPUB formatındaki içerikleri yapay zeka desteğiyle yerelleştirmesine olanak tanıyan deneysel bir yardımcı programdır. İşbu Aracı kullanarak aşağıdaki hususları peşinen kabul etmiş sayılırsınız:",
+    legalPoints: [
+      "Fikri Mülkiyet: İşlenen her türlü içeriğin (EPUB) telif haklarına uygunluğundan ve yasal statüsünden münhasıran kullanıcı sorumludur.",
+      "Kişisel Kullanım: Bu araç ticari amaç gütmez; yalnızca kişisel, hobi veya eğitim amaçlı kullanım için tasarlanmıştır.",
+      "Sorumluluk Sınırı: Geliştiriciler, aracın kullanımından doğabilecek veri kayıpları, telif hakkı ihlalleri veya doğrudan/dolaylı hiçbir zarardan sorumlu tutulamaz.",
+      "Yasal Bağlayıcılık: Servisin kullanılması, bu şartların ve tüm hukuki sonuçların kullanıcı tarafından tam muvafakat ile kabul edildiği anlamına gelir."
+    ]
   },
   en: {
     historyTitle: "TRANSLATION HISTORY", clearHistory: "Clear All", noHistory: "No history",
@@ -77,7 +86,16 @@ const STRINGS_REGISTRY: Record<string, any> = {
     manualKeyPlaceholder: "Paste your API key...", aiAnalysis: "AI ANALYSIS", preparing: "AWAITING PREP",
     systemLogsReady: "Waiting for logs...", verifyingError: "Key error!", literal: "Literal", creative: "Creative",
     quotaError: "QUOTA EXCEEDED: Please wait about 60 seconds. Translation paused, you can resume later.",
-    interfaceSettings: "INTERFACE SETTINGS", themeMode: "THEME MODE", appLanguage: "APP LANGUAGE"
+    interfaceSettings: "INTERFACE SETTINGS", themeMode: "THEMODE", appLanguage: "APP LANGUAGE",
+    copyright: "2024 AI Literary EPUB Translator. All rights reserved.", madeWith: "Made with love with Gemini AI.", learnMore: "Learn More",
+    legalWarningTitle: "LEGAL DISCLAIMER & TERMS OF SERVICE",
+    legalWarningText: "This software ('Tool') is an experimental utility designed to assist users in localizing EPUB content via AI. By utilizing this Tool, you explicitly acknowledge and agree to the following terms:",
+    legalPoints: [
+      "Intellectual Property: Users are solely responsible for ensuring that all processed content complies with relevant copyright laws and international treaties.",
+      "Non-Commercial Use: This tool is strictly for personal, non-commercial, and educational purposes.",
+      "Limitation of Liability: The developers shall not be held liable for any data loss, copyright infringement, or direct/indirect damages resulting from the use of this Tool.",
+      "Acceptance of Terms: Use of this service constitutes full consent to these terms and the acceptance of all associated legal consequences."
+    ]
   }
 };
 
@@ -96,6 +114,7 @@ export default function App() {
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(false);
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeInfo | null>(null);
+  const [isLegalExpanded, setIsLegalExpanded] = useState(false);
   
   const currentStrings = STRINGS_REGISTRY[uiLang] || STRINGS_REGISTRY['en'];
   const t = { ...STRINGS_REGISTRY['en'], ...currentStrings };
@@ -371,7 +390,17 @@ export default function App() {
                   </button>
                 </div>
                 
-                <p className="mt-4 text-[9px] font-bold text-slate-400 dark:text-slate-500 text-center leading-relaxed px-4">{t.billingInfo}</p>
+                <div className="mt-4 text-[9px] font-bold text-slate-400 dark:text-slate-500 text-center leading-relaxed px-4 flex flex-col items-center gap-1.5">
+                  <span>{t.billingInfo}</span>
+                  <a 
+                    href="https://ai.google.dev/gemini-api/docs/billing" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-black uppercase text-[8px]"
+                  >
+                    {t.learnMore} <ExternalLink size={10} />
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -563,6 +592,59 @@ export default function App() {
                 <div className="flex-1 overflow-y-auto custom-scrollbar font-mono text-[10px] md:text-[11px]"><LogViewer logs={progress.logs} readyText={t.systemLogsReady} /></div>
               </section>
             </div>
+
+            {/* Legal Warning Card - Interactive Toggle */}
+            <section 
+              onClick={() => setIsLegalExpanded(!isLegalExpanded)}
+              className={`bg-white dark:bg-slate-900 rounded-[2.5rem] border-2 transition-all duration-500 p-8 md:p-12 shadow-2xl mb-24 relative overflow-hidden cursor-pointer group hover:border-indigo-400 ${isLegalExpanded ? 'border-indigo-500 ring-4 ring-indigo-500/5' : 'border-slate-100 dark:border-slate-800'}`}
+            >
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                   <Gavel size={120} />
+                </div>
+                <div className="flex flex-col gap-8 relative z-10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                          <div className={`p-4 transition-colors duration-500 rounded-[1.5rem] shadow-xl ${isLegalExpanded ? 'bg-indigo-600 text-white' : 'bg-slate-950 dark:bg-slate-800 text-slate-400'}`}>
+                              <Shield size={24} />
+                          </div>
+                          <h4 className={`text-[14px] md:text-[16px] font-black uppercase tracking-[0.2em] border-b-2 pb-1 transition-colors ${isLegalExpanded ? 'text-indigo-600 dark:text-indigo-400 border-indigo-500' : 'text-slate-900 dark:text-white border-transparent'}`}>
+                            {t.legalWarningTitle}
+                          </h4>
+                      </div>
+                      <div className="p-2 text-slate-400 group-hover:text-indigo-500 transition-colors">
+                        {isLegalExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-6">
+                        <p className={`text-[12px] md:text-[14px] leading-relaxed font-bold italic transition-colors ${isLegalExpanded ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'}`}>
+                          {t.legalWarningText}
+                        </p>
+                        
+                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-700 overflow-hidden ${isLegalExpanded ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                          {t.legalPoints.map((point: string, idx: number) => (
+                            <div key={idx} className="flex gap-4 p-5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-lg transition-all">
+                                <div className="text-indigo-500 font-black text-sm pt-0.5">{idx + 1}.</div>
+                                <p className="text-[11px] md:text-[12px] leading-snug font-medium text-slate-600 dark:text-slate-300">
+                                  {point}
+                                </p>
+                            </div>
+                          ))}
+                        </div>
+                    </div>
+
+                    {!isLegalExpanded && (
+                      <div className="flex items-center justify-center gap-2 animate-pulse py-2">
+                        <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{t.learnMore}</span>
+                      </div>
+                    )}
+
+                    <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-3">
+                        <Heart size={14} className="text-red-500" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t.madeWith}</span>
+                    </div>
+                </div>
+            </section>
         </div>
       </main>
 
